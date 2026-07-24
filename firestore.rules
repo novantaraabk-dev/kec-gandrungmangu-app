@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collections Rules
+    // ------------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /villageSettings/{villageId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /apbdes/{apbdesId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+
+      match /details/{apbdesDetailId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+    }
+
+    match /{path=**}/details/{apbdesDetailId} {
+      allow read: if true;
+    }
+
+    match /monev/{monevId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /regulations/{regulationId} {
+      allow read: if true;
+      allow write: if isSignedIn() || request.auth == null;
+    }
+
+    match /spjDocuments/{spjDocumentId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /kpmBlts/{kpmBltId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /posyanduKaders/{kaderId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /perangkat/{perangkatId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /bpd/{bpdId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /rtRw/{rtRwId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /jalanDesa/{jalanId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /jalanKabupaten/{jalanId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /stunting/{stuntingId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /bumilKek/{bumilKekId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /jumlahBalita/{jumlahBalitaId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /p3keInterventions/{interventionId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /prioritasDanaDesa/{prioritasId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /arsipDokumen/{docId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /masjids/{masjidId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /musholas/{musholaId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /pasarDesa/{pasarDesaId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /bumdes/{bumdesId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /mbg/{mbgId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /kependudukan/{kependudukanId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /pbbP2/{pbbP2Id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+
+      match /payments/{paymentId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+    }
+
+    match /linmas/{linmasId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /skLinmas/{skLinmasId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /pendudukAgama/{pendudukAgamaId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /rumahIbadah/{rumahIbadahId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

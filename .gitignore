@@ -1,0 +1,19 @@
+# Dependencies
+/node_modules
+
+# Build artifacts
+/.next/
+
+# Local Environment Variables
+.env
+.env.local
+
+# Vercel (jika digunakan untuk deployment)
+.vercel
+
+# Firebase Logs
+firebase-debug.log
+
+# Lain-lain
+*.log
+.DS_Store

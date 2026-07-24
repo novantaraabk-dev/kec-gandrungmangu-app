@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Izinkan siapa saja membaca gambar dari folder settings (untuk logo & background)
+    // tapi hanya user yang login yang bisa menulis/mengubahnya.
+    match /settings/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Untuk semua file lainnya, user harus login untuk bisa membaca atau menulis.
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

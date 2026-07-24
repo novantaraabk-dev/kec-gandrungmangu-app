@@ -1,0 +1,1333 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile with their name, email, and role within the Desa Digital application. Authentication details are handled externally by Firebase Auth.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity. This typically corresponds to the Firebase Auth User ID (UID)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user, used for authentication.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user within the application, determining access privileges (e.g., 'admin', 'operator desa')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this user profile record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this user profile record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record. (Relationship: UserProfile 1:N UserProfile)"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record. (Relationship: UserProfile 1:N UserProfile)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "Perangkat": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Perangkat",
+      "type": "object",
+      "description": "Represents a village official (Perangkat Desa).",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "birthPlace": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "gender": { "type": "string" },
+        "education": { "type": "string" },
+        "religion": { "type": "string" },
+        "skNumber": { "type": "string" },
+        "skDate": { "type": "string" },
+        "inaugurationDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "name", "title", "createdAt", "createdBy"]
+    },
+    "BpdMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BpdMember",
+      "type": "object",
+      "description": "Represents a member of the Village Consultative Body (BPD).",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "name": { "type": "string" },
+        "bpdStatus": { "type": "string" },
+        "status": { "type": "string" },
+        "birthPlace": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "education": { "type": "string" },
+        "religion": { "type": "string" },
+        "occupation": { "type": "string" },
+        "skNumber": { "type": "string" },
+        "tenurePeriod": { "type": "string" },
+        "skDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "name", "status", "createdAt", "createdBy"]
+    },
+    "RtRwMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RtRwMember",
+      "type": "object",
+      "description": "Represents a member of the RT/RW.",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "dusun": { "type": "string" },
+        "rw": { "type": "string" },
+        "rt": { "type": "string" },
+        "position": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "dusun", "rw", "position", "name", "createdAt", "createdBy"]
+    },
+    "Apbdes": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Apbdes",
+      "type": "object",
+      "description": "Represents the Anggaran Pendapatan dan Belanja Desa (APBDes) for a specific fiscal year, including aggregated financial figures.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the APBDes entity."
+        },
+        "year": {
+          "type": "number",
+          "description": "The fiscal year for which the APBDes applies (e.g., 2023)."
+        },
+        "village": {
+          "type": "string",
+          "description": "The village this APBDes belongs to."
+        },
+        "revenue": {
+          "type": "number",
+          "description": "Total village revenue (pendapatan) for the fiscal year, excluding Dana Desa."
+        },
+        "revenueSources": {
+          "type": "object",
+          "description": "A breakdown of revenue by source, excluding Dana Desa. Keys are source names, values are amounts.",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "expenditure": {
+          "type": "number",
+          "description": "Total village expenditure (belanja) for the fiscal year."
+        },
+        "financing": {
+          "type": "number",
+          "description": "Total village financing (pembiayaan) for the fiscal year."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this APBDes record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this APBDes record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record. (Relationship: UserProfile 1:N Apbdes)"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record. (Relationship: UserProfile 1:N Apbdes)"
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "village",
+        "revenue",
+        "expenditure",
+        "financing",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "ApbdesDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ApbdesDetail",
+      "type": "object",
+      "description": "Represents a detailed line item contributing to the aggregated revenues, expenditures, or financing of an APBDes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the APBDes Detail entity."
+        },
+        "apbdesId": {
+          "type": "string",
+          "description": "Reference to the parent APBDes entity this detail belongs to. (Relationship: Apbdes 1:N ApbdesDetail)"
+        },
+        "village": {
+          "type": "string",
+          "description": "The village this APBDes detail belongs to."
+        },
+        "year": {
+          "type": "number",
+          "description": "The fiscal year for this APBDes detail."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the detailed item (e.g., 'Dana Desa', 'Pembangunan Jalan')."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The monetary amount for this detailed item."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of this detail item (e.g., 'Pendapatan', 'Belanja', 'Pembiayaan'), linking it to the respective APBDes aggregate."
+        },
+        "code": {
+          "type": "string"
+        },
+        "activityCode": {
+          "type": "string"
+        },
+        "fundingSource": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this APBDes Detail record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this APBDes Detail record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record. (Relationship: UserProfile 1:N ApbdesDetail)"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record. (Relationship: UserProfile 1:N ApbdesDetail)"
+        }
+      },
+      "required": [
+        "id",
+        "apbdesId",
+        "village",
+        "year",
+        "description",
+        "amount",
+        "category",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "JalanDesa": {
+      "title": "JalanDesa",
+      "type": "object",
+      "description": "Represents data for a village road, including its condition and dimensions.",
+      "properties": {
+          "id": { "type": "string" },
+          "village": { "type": "string" },
+          "noUrut": { "type": "number" },
+          "namaJalan": { "type": "string" },
+          "panjang": { "type": "string" },
+          "lebar": { "type": "string" },
+          "pangkal": { "type": "string" },
+          "ujung": { "type": "string" },
+          "jenisPerkerasan": { "type": "string" },
+          "baik": { "type": "string" },
+          "sedang": { "type": "string" },
+          "rusakRingan": { "type": "string" },
+          "rusakBerat": { "type": "string" },
+          "totalAnggaran": { "type": "string" },
+          "rencanaPerkerasan": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "createdBy": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "updatedBy": { "type": "string" }
+      },
+      "required": ["id", "village", "noUrut", "namaJalan", "createdAt", "createdBy"]
+    },
+    "JalanKabupaten": {
+      "title": "JalanKabupaten",
+      "type": "object",
+      "description": "Represents data for a regency road (jalan kabupaten).",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string", "description": "The village this road segment belongs to." },
+        "noRuas": { "type": "string" },
+        "namaRuas": { "type": "string" },
+        "pangkalRuas": { "type": "string" },
+        "ujungRuas": { "type": "string" },
+        "panjangRuas": { "type": "number" },
+        "lebarRuas": { "type": "number" },
+        "kondisiBaik": { "type": "number" },
+        "kondisiSedang": { "type": "number" },
+        "kondisiRusakRingan": { "type": "number" },
+        "kondisiRusakBerat": { "type": "number" },
+        "usulanMusren": { "type": "string" },
+        "usulanDesa": { "type": "string" },
+        "paguUsulan": { "type": "number" },
+        "panjangUsulan": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "noRuas", "namaRuas", "createdAt", "createdBy"]
+    },
+    "Monev": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Monev",
+      "type": "object",
+      "description": "Represents a record for Monitoring and Evaluation (Monev) of APBDes activities and their realization status. Linked to a specific APBDes detail.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Monev entity."
+        },
+        "village": {
+          "type": "string",
+          "description": "The village this Monev record belongs to."
+        },
+        "apbdesDetailId": {
+          "type": "string",
+          "description": "Reference ID to the specific ApbdesDetail document this Monev is for."
+        },
+        "year": {
+          "type": "number",
+          "description": "The fiscal year to which the Monev activity belongs."
+        },
+        "activity": {
+          "type": "string",
+          "description": "Description of the APBDes activity or program being monitored (copied from ApbdesDetail)."
+        },
+        "apbdesCode": {
+          "type": "string",
+          "description": "The account code for the activity (copied from ApbdesDetail)."
+        },
+        "fundingSource": {
+          "type": "string",
+          "description": "The funding source for the activity (copied from ApbdesDetail)."
+        },
+        "budget": {
+          "type": "number",
+          "description": "The allocated budget for the specific activity (copied from ApbdesDetail)."
+        },
+        "realization": {
+          "type": "number",
+          "description": "The actual realized expenditure or progress for the activity."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the activity (e.g., 'Perencanaan', 'Realisasi', 'Selesai')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes from the admin regarding the evaluation."
+        },
+        "volume": {
+          "type": "object",
+          "description": "The volume or output of the activity, e.g., 100 meters, 5 units.",
+          "properties": {
+              "value": { "type": "string", "description": "The numeric or textual value of the volume." },
+              "unit": { 
+                  "type": "string", 
+                  "description": "The unit of measurement for the volume.",
+                  "enum": ["Unit", "Panjang", "Orang", "Bulan", "Tahun", "Paket"]
+              }
+          },
+          "required": ["value", "unit"]
+        },
+        "tanggalRealisasi": {
+            "type": "string",
+            "description": "The date the activity was realized or completed.",
+            "format": "date"
+        },
+        "fotoUrl": {
+            "type": "string",
+            "description": "URL to a photo of the activity stored in Google Drive.",
+            "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "village",
+        "apbdesDetailId",
+        "year",
+        "activity",
+        "budget",
+        "realization",
+        "status",
+        "volume",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "Regulation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Regulation",
+      "type": "object",
+      "description": "Represents official village regulations, such as Perdes (Peraturan Desa), Perkades (Peraturan Kepala Desa), or SK (Surat Keputusan).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Regulation entity."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the village regulation (e.g., 'Perdes', 'Perkades', 'SK')."
+        },
+        "number": {
+          "type": "string",
+          "description": "The regulation's official number or code."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date when the regulation was issued.",
+          "format": "date"
+        },
+        "about": {
+          "type": "string",
+          "description": "A brief description or the main subject of the regulation."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL to the PDF file of the regulation stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this Regulation record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this Regulation record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record. (Relationship: UserProfile 1:N Regulation)"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record. (Relationship: UserProfile 1:N Regulation)"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "number",
+        "date",
+        "about",
+        "fileUrl",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "KpmBlt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "KpmBlt",
+      "type": "object",
+      "description": "Represents a Keluarga Penerima Manfaat (KPM) for BLT-DD (Bantuan Langsung Tunai Dana Desa) program.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the KPM BLT-DD entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the BLT-DD beneficiary."
+        },
+        "nik": {
+          "type": "string",
+          "description": "Nomor Induk Kependudukan (NIK) or National ID number of the beneficiary."
+        },
+        "address": {
+          "type": "string",
+          "description": "Full address of the beneficiary."
+        },
+        "period": {
+          "type": "string",
+          "description": "The period for which the BLT-DD beneficiary is registered (e.g., 'Triwulan I 2023', '2023-01')."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Boolean flag indicating whether the beneficiary is currently active in the program."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this KPM BLT-DD record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this KPM BLT-DD record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record. (Relationship: UserProfile 1:N KpmBlt)"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record. (Relationship: UserProfile 1:N KpmBlt)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "nik",
+        "address",
+        "period",
+        "isActive",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "PosyanduKader": {
+      "title": "PosyanduKader",
+      "type": "object",
+      "description": "Represents a Kader (volunteer) of a specific Posyandu in a village.",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "posyanduName": { "type": "string" },
+        "kaderName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "posyanduName", "kaderName", "createdAt", "createdBy"]
+    },
+    "P3keIntervention": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "P3keIntervention",
+      "type": "object",
+      "description": "Represents a P3KE (Pensasaran Percepatan Penghapusan Kemiskinan Ekstrem) intervention record.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the P3KE Intervention entity."
+        },
+        "village": {
+          "type": "string",
+          "description": "The village where the intervention is implemented."
+        },
+        "jenisIntervensi": {
+          "type": "string",
+          "description": "The type of intervention (e.g., 'Jambanisasi')."
+        },
+        "jumlahPenerima": {
+          "type": "string",
+          "description": "The number of beneficiaries (e.g., '5 orang')."
+        },
+        "totalAnggaran": {
+          "type": "string",
+          "description": "The total budget for the intervention (e.g., 'Rp 15.000.000')."
+        },
+        "sumberAnggaran": {
+          "type": "string",
+          "description": "The funding source for the intervention.",
+          "enum": [
+            "Dana Desa",
+            "Bansus",
+            "Banprov",
+            "Pokir",
+            "APBN",
+            "CSR",
+            "Sumber Lainnya"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this record was last updated.",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who created this record."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Reference to the UserProfile ID who last updated this record."
+        }
+      },
+      "required": [
+        "id",
+        "village",
+        "jenisIntervensi",
+        "jumlahPenerima",
+        "totalAnggaran",
+        "sumberAnggaran",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "PrioritasDanaDesa": {
+      "title": "PrioritasDanaDesa",
+      "type": "object",
+      "description": "Represents the priority allocation of the Village Fund (Dana Desa) for a specific year.",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "year": { "type": "number" },
+        "statusDesa": { "type": "string" },
+        "paguDanaDesa": { "type": "number" },
+        "jumlahKpm": { "type": "number" },
+        "totalBulanBlt": { "type": "number" },
+        "totalAnggaranBlt": { "type": "number" },
+        "totalAnggaranIklim": { "type": "number" },
+        "totalAnggaranKesehatan": { "type": "number" },
+        "totalAnggaranPangan": { "type": "number" },
+        "totalAnggaranInfrastruktur": { "type": "number" },
+        "totalAnggaranDigital": { "type": "number" },
+        "jumlahPaguPrioritas": { "type": "number" },
+        "jumlahPaguNonPrioritas": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["id", "village", "year", "createdAt", "createdBy"]
+    },
+    "SpjDocument": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SpjDocument",
+      "type": "object",
+      "description": "Represents a submitted SPJ document, linking it to a village and storing its Google Drive URL.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "village": {
+          "type": "string"
+        },
+        "year": {
+          "type": "number"
+        },
+        "month": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "activity": {
+          "type": "string"
+        },
+        "sourceOfFunds": {
+          "type": "string"
+        },
+        "fileUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "village",
+        "year",
+        "month",
+        "activity",
+        "fileUrl",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "AppSettings": {
+      "title": "AppSettings",
+      "type": "object",
+      "description": "Stores global application settings like logo and background URLs.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "backgroundUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "villageBackgroundUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "arsipDriveFolderIds": {
+          "type": "object",
+          "description": "Google Drive Folder IDs for storing archived documents, categorized by field.",
+          "properties": {
+            "PM": {
+              "type": "string",
+              "description": "Folder ID for PM documents."
+            },
+            "TAPEM": {
+              "type": "string",
+              "description": "Folder ID for TAPEM documents."
+            },
+            "TRANTIBUM": {
+              "type": "string",
+              "description": "Folder ID for TRANTIBUM documents."
+            },
+            "KESRA": {
+              "type": "string",
+              "description": "Folder ID for KESRA documents."
+            },
+            "UMUM & PELAYANAN": {
+              "type": "string",
+              "description": "Folder ID for UMUM & PELAYANAN documents."
+            },
+            "PKA": {
+              "type": "string",
+              "description": "Folder ID for PKA documents."
+            }
+          }
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "VillageSettings": {
+      "title": "VillageSettings",
+      "type": "object",
+      "description": "Stores village-specific settings, like Google Drive folder IDs.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the VillageSettings, typically the village name in lowercase."
+        },
+        "villageName": {
+            "type": "string",
+            "description": "The name of the village."
+        },
+        "spjDriveFolderId": {
+          "type": "string",
+          "description": "The Google Drive Folder ID for storing SPJ documents for this village."
+        },
+        "produkHukumDriveFolderId": {
+          "type": "string",
+          "description": "The Google Drive Folder ID for storing Produk Hukum documents for this village."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "villageName"
+      ]
+    },
+    "ArsipDokumen": {
+      "title": "ArsipDokumen",
+      "type": "object",
+      "description": "Represents an archived document in the system.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the document (e.g., 'PM', 'TAPEM')."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the document (e.g., 'Surat Edaran', 'SK')."
+        },
+        "customType": {
+          "type": "string",
+          "description": "Custom type if 'type' is 'Lainnya'."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or description of the document."
+        },
+        "fileUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "type",
+        "title",
+        "fileUrl",
+        "createdAt",
+        "createdBy"
+      ]
+    },
+    "Masjid": {
+        "title": "Masjid",
+        "type": "object",
+        "description": "Represents a mosque in a village.",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "name": { "type": "string" },
+            "address": { "type": "string" }
+        },
+        "required": ["village", "name", "address"]
+    },
+    "Mushola": {
+        "title": "Mushola",
+        "type": "object",
+        "description": "Represents a mushola (prayer room) in a village.",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "name": { "type": "string" },
+            "address": { "type": "string" }
+        },
+        "required": ["village", "name", "address"]
+    },
+    "PasarDesa": {
+        "title": "PasarDesa",
+        "type": "object",
+        "description": "Represents a village market.",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "name": { "type": "string" },
+            "perdesNumber": { "type": "string" }
+        },
+        "required": ["village", "name"]
+    },
+    "Bumdes": {
+        "title": "Bumdes",
+        "type": "object",
+        "description": "Represents a village-owned enterprise (BUMDes).",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "name": { "type": "string" },
+            "establishmentAct": { "type": "string" },
+            "ahuNumber": { "type": "string" },
+            "directorName": { "type": "string" },
+            "businessType": { "type": "string" }
+        },
+        "required": ["village", "name"]
+    },
+    "Kependudukan": {
+      "title": "Kependudukan",
+      "type": "object",
+      "description": "Represents population data for a village for a specific year.",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "year": { "type": "number" },
+        "penduduk_l": { "type": "number" },
+        "penduduk_p": { "type": "number" },
+        "kk_l": { "type": "number" },
+        "kk_p": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "year"]
+    },
+    "PbbP2": {
+      "title": "PbbP2",
+      "type": "object",
+      "description": "Represents a PBB P2 recapitulation for a village in a specific year.",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "year": { "type": "number" },
+        "pagu": { "type": "number" },
+        "totalSppt": { "type": "number" },
+        "terbayar": { "type": "number", "description": "The total cumulative amount paid for this record. It is updated automatically when a new payment is added to the 'payments' subcollection." },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "year", "pagu", "totalSppt", "terbayar"]
+    },
+    "PbbP2Payment": {
+      "title": "PbbP2Payment",
+      "type": "object",
+      "description": "Represents a single payment installment for a PBB P2 record.",
+      "properties": {
+        "id": { "type": "string" },
+        "pbbP2Id": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["pbbP2Id", "amount", "paymentDate", "createdAt", "createdBy"]
+    },
+    "Mbg": {
+        "title": "Mbg",
+        "type": "object",
+        "description": "Represents a Mitra Binaan Gandrungmangu (MBG).",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "name": { "type": "string" },
+            "address": { "type": "string" }
+        },
+        "required": ["village", "name", "address"]
+    },
+    "LinmasMember": {
+      "title": "LinmasMember",
+      "type": "object",
+      "description": "Represents a member of the Linmas (Community Protection).",
+      "properties": {
+        "id": { "type": "string" },
+        "village": { "type": "string" },
+        "name": { "type": "string" },
+        "jabatan": {
+          "type": "string",
+          "enum": ["Danton", "Anggota"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["village", "name", "jabatan", "createdAt", "createdBy"]
+    },
+    "SkLinmas": {
+        "title": "SkLinmas",
+        "type": "object",
+        "description": "Represents a Linmas Decree (SK) document.",
+        "properties": {
+            "id": { "type": "string" },
+            "village": { "type": "string" },
+            "fileUrl": { "type": "string", "format": "uri" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "createdBy": { "type": "string" }
+        },
+        "required": ["village", "fileUrl", "createdAt", "createdBy"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profiles including their name, email, and assigned role ('admin' or 'operator desa'). The 'role' field is crucial for role-based access control in Firestore security rules. The 'id' field corresponds to the Firebase Auth UID. Includes 'createdBy' and 'updatedBy' for auditing."
+        }
+      },
+      {
+        "path": "/perangkat/{perangkatId}",
+        "definition": {
+          "entityName": "Perangkat",
+          "schema": {
+            "$ref": "#/backend/entities/Perangkat"
+          },
+          "description": "Stores data for village officials (Perangkat Desa). Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/bpd/{bpdId}",
+        "definition": {
+          "entityName": "BpdMember",
+          "schema": {
+            "$ref": "#/backend/entities/BpdMember"
+          },
+          "description": "Stores data for Village Consultative Body (BPD) members. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/rtRw/{rtRwId}",
+        "definition": {
+          "entityName": "RtRwMember",
+          "schema": {
+            "$ref": "#/backend/entities/RtRwMember"
+          },
+          "description": "Stores data for RT/RW officials. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/apbdes/{apbdesId}",
+        "definition": {
+          "entityName": "Apbdes",
+          "schema": {
+            "$ref": "#/backend/entities/Apbdes"
+          },
+          "description": "Contains aggregated APBDes (Anggaran Pendapatan dan Belanja Desa) data for specific fiscal years, including total revenue, expenditure, and financing. Authorization is role-based; 'admin' can CRUD, 'operator desa' can CUD. Includes 'createdBy' and 'updatedBy' for auditing.",
+          "params": [
+            {
+              "name": "apbdesId",
+              "description": "The unique identifier for an APBDes record, corresponding to the 'id' field in the Apbdes entity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/apbdes/{apbdesId}/details/{apbdesDetailId}",
+        "definition": {
+          "entityName": "ApbdesDetail",
+          "schema": {
+            "$ref": "#/backend/entities/ApbdesDetail"
+          },
+          "description": "Stores detailed line items (rincian) for a specific APBDes record. Each document contains a reference to its parent APBDes via 'apbdesId'. Authorization for this subcollection is inherited from the parent collection's role-based access, meaning 'admin' can CRUD and 'operator desa' can CUD. Includes 'createdBy' and 'updatedBy' for auditing.",
+          "params": [
+            {
+              "name": "apbdesId",
+              "description": "The unique identifier of the parent APBDes record."
+            },
+            {
+              "name": "apbdesDetailId",
+              "description": "The unique identifier for an APBDes Detail line item, corresponding to the 'id' field in the ApbdesDetail entity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/jalanDesa/{jalanDesaId}",
+        "definition": {
+          "entityName": "JalanDesa",
+          "schema": {
+            "$ref": "#/backend/entities/JalanDesa"
+          },
+          "description": "Stores village road data. Writable by 'admin' and 'operator desa' roles.",
+          "params": [
+            {
+              "name": "jalanDesaId",
+              "description": "The unique identifier for a Jalan Desa record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/jalanKabupaten/{jalanId}",
+        "definition": {
+          "entityName": "JalanKabupaten",
+          "schema": {
+            "$ref": "#/backend/entities/JalanKabupaten"
+          },
+          "description": "Stores regency road (jalan kabupaten) data. Writable by 'admin'."
+        }
+      },
+      {
+        "path": "/monev/{monevId}",
+        "definition": {
+          "entityName": "Monev",
+          "schema": {
+            "$ref": "#/backend/entities/Monev"
+          },
+          "description": "Holds Monitoring and Evaluation (Monev) records for APBDes activities, tracking budget, realization, and status. Authorization is role-based; 'admin' can CRUD, 'operator desa' can CUD. Includes 'createdBy' and 'updatedBy' for auditing.",
+          "params": [
+            {
+              "name": "monevId",
+              "description": "The unique identifier for a Monev record, corresponding to the 'id' field in the Monev entity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/regulations/{regulationId}",
+        "definition": {
+          "entityName": "Regulation",
+          "schema": {
+            "$ref": "#/backend/entities/Regulation"
+          },
+          "description": "Manages official village regulations (Perdes, Perkades, SK), including details like type, number, date, subject, and a file URL. Authorization is role-based; 'admin' can CRUD, 'operator desa' can CUD. Includes 'createdBy' and 'updatedBy' for auditing.",
+          "params": [
+            {
+              "name": "regulationId",
+              "description": "The unique identifier for a Regulation record, corresponding to the 'id' field in the Regulation entity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/spjDocuments/{spjDocumentId}",
+        "definition": {
+          "entityName": "SpjDocument",
+          "schema": {
+            "$ref": "#/backend/entities/SpjDocument"
+          },
+          "description": "Stores SPJ (Surat Pertanggungjawaban) document metadata. The actual files are stored in Google Drive. Operators can create documents for their assigned village. Admins have full access.",
+          "params": [
+            {
+              "name": "spjDocumentId",
+              "description": "The unique identifier for an SPJ document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/kpmBlts/{kpmBltId}",
+        "definition": {
+          "entityName": "KpmBlt",
+          "schema": {
+            "$ref": "#/backend/entities/KpmBlt"
+          },
+          "description": "Stores data for Keluarga Penerima Manfaat (KPM) for the BLT-DD program, including beneficiary name, NIK, address, and status. Authorization is role-based; 'admin' can CRUD, 'operator desa' can CUD. Includes 'createdBy' and 'updatedBy' for auditing.",
+          "params": [
+            {
+              "name": "kpmBltId",
+              "description": "The unique identifier for a KPM BLT-DD record, corresponding to the 'id' field in the KpmBlt entity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/posyanduKaders/{kaderId}",
+        "definition": {
+          "entityName": "PosyanduKader",
+          "schema": {
+            "$ref": "#/backend/entities/PosyanduKader"
+          },
+          "description": "Stores Posyandu kader data. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/p3keInterventions/{interventionId}",
+        "definition": {
+          "entityName": "P3keIntervention",
+          "schema": {
+            "$ref": "#/backend/entities/P3keIntervention"
+          },
+          "description": "Stores P3KE intervention data. Writable by 'admin' and 'operator desa' roles.",
+          "params": [
+            {
+              "name": "interventionId",
+              "description": "The unique identifier for a P3KE Intervention record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/prioritasDanaDesa/{prioritasId}",
+        "definition": {
+          "entityName": "PrioritasDanaDesa",
+          "schema": {
+            "$ref": "#/backend/entities/PrioritasDanaDesa"
+          },
+          "description": "Stores Village Fund Priority data. Writable by 'admin' and 'operator desa' roles.",
+          "params": [
+            {
+              "name": "prioritasId",
+              "description": "The unique identifier for a Prioritas Dana Desa record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/arsipDokumen/{arsipDokumenId}",
+        "definition": {
+          "entityName": "ArsipDokumen",
+          "schema": {
+            "$ref": "#/backend/entities/ArsipDokumen"
+          },
+          "description": "Stores archived documents. Only writable by admins."
+        }
+      },
+      {
+        "path": "/settings/{settingId}",
+        "definition": {
+          "entityName": "AppSettings",
+          "schema": {
+            "$ref": "#/backend/entities/AppSettings"
+          },
+          "description": "Stores global application settings like logo and background URLs. Should only contain a single document, e.g., with id 'global'. This collection is publicly readable but only writable by admins."
+        }
+      },
+      {
+        "path": "/villageSettings/{villageId}",
+        "definition": {
+          "entityName": "VillageSettings",
+          "schema": {
+            "$ref": "#/backend/entities/VillageSettings"
+          },
+          "description": "Stores village-specific settings like Google Drive Folder IDs. Writable only by admins."
+        }
+      },
+      {
+        "path": "/masjids/{masjidId}",
+        "definition": {
+            "entityName": "Masjid",
+            "schema": { "$ref": "#/backend/entities/Masjid" },
+            "description": "Stores data for mosques. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/musholas/{musholaId}",
+        "definition": {
+            "entityName": "Mushola",
+            "schema": { "$ref": "#/backend/entities/Mushola" },
+            "description": "Stores data for musholas. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/pasarDesa/{pasarDesaId}",
+        "definition": {
+            "entityName": "PasarDesa",
+            "schema": { "$ref": "#/backend/entities/PasarDesa" },
+            "description": "Stores data for village markets. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/bumdes/{bumdesId}",
+        "definition": {
+            "entityName": "Bumdes",
+            "schema": { "$ref": "#/backend/entities/Bumdes" },
+            "description": "Stores data for BUMDes. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/mbg/{mbgId}",
+        "definition": {
+            "entityName": "Mbg",
+            "schema": { "$ref": "#/backend/entities/Mbg" },
+            "description": "Stores data for MBG. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/kependudukan/{kependudukanId}",
+        "definition": {
+          "entityName": "Kependudukan",
+          "schema": {
+            "$ref": "#/backend/entities/Kependudukan"
+          },
+          "description": "Stores village population data. Writable only by admins."
+        }
+      },
+      {
+        "path": "/pbbP2/{pbbP2Id}",
+        "definition": {
+          "entityName": "PbbP2",
+          "schema": {
+            "$ref": "#/backend/entities/PbbP2"
+          },
+          "description": "Stores PBB P2 recapitulation data. Writable only by admins."
+        }
+      },
+      {
+        "path": "/pbbP2/{pbbP2Id}/payments/{paymentId}",
+        "definition": {
+          "entityName": "PbbP2Payment",
+          "schema": {
+            "$ref": "#/backend/entities/PbbP2Payment"
+          },
+          "description": "Stores individual payment installments for a PBB P2 record. Writable only by admins."
+        }
+      },
+      {
+        "path": "/linmas/{linmasId}",
+        "definition": {
+          "entityName": "LinmasMember",
+          "schema": { "$ref": "#/backend/entities/LinmasMember" },
+          "description": "Stores Linmas member data. Writable by 'admin' and 'operator desa' roles."
+        }
+      },
+      {
+        "path": "/skLinmas/{skLinmasId}",
+        "definition": {
+            "entityName": "SkLinmas",
+            "schema": { "$ref": "#/backend/entities/SkLinmas" },
+            "description": "Stores metadata for uploaded SK Linmas documents. Writable by 'admin' and 'operator desa' roles."
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for the Desa Digital application is designed to prioritize authorization independence, clarity, and scalability, aligning with the core design principles. The primary authorization mechanism is **Role-Based Access Control (RBAC)**, where user roles ('admin' or 'operator desa') are stored in the `/users/{userId}` collection. This strategy enables robust and easily debuggable security rules.\n\n**Authorization Independence:**\n1.  **User Role Lookup:** The access rules for all data collections (APBDes, Monev, Regulations, KPM BLT-DD, Posyandu) will rely on a single, self-contained lookup of the requesting user's role from their own `userProfiles` document (`get(/users/$(request.auth.uid)).data.role`). This approach is critical as it avoids `get()` calls to other *data* documents for authorization, which could otherwise introduce hierarchical dependencies, complicate atomic operations, and make debugging security issues difficult. Since the user's role is an attribute of the *requesting user* themselves, its lookup is not considered a 'hierarchical authorization dependency' in the context of one data entity's access being dependent on another *unrelated* data entity's attributes.\n2.  **Global Role-Based Access:** All documents within `apbdes`, `monev`, `regulations`, `kpmBlts`, and `posyandus` collections share the same security posture (e.g., 'admin can CRUD, operator can CUD'). This means access to a subcollection like `/apbdes/{apbdesId}/details/{apbdesDetailId}` does *not* depend on specific attributes of its parent `apbdes` document (e.g., `apbdes.createdBy`). Instead, it depends directly on the requesting user's global role. This eliminates the need to denormalize `ownerId` or `members` maps from parent documents into subcollection documents for authorization purposes in this specific application, as the global role suffices.\n\n**QAPs (Rules are not Filters):**\n1.  **Structural Segregation:** Each collection (`/apbdes`, `/monev`, `/regulations`, `/kpmBlts`, `/posyandus`) represents a homogeneous set of data, meaning all documents within a given collection have the same access requirements based on user roles. This allows `list` operations to be securely managed by simple role checks in Firestore rules (e.g., `allow list: if isSignedInAndHasRole(['admin', 'operator desa'])`). The client application does not need to perform complex queries (e.g., `where('ownerId', '==', request.auth.uid)`) to enforce security; the rules grant or deny access to the entire collection based on the user's established role, thereby enabling Query-as-Permission (QAPs).\n2.  **Predictable Access Patterns:** The consistent role-based access model makes security rules straightforward and predictable, directly mapping user roles to CRUD capabilities across different data types, thus supporting efficient and secure data retrieval via list operations without client-side filtering for authorization.\n\n**Other Principles:**\n*   **DBAC:** User roles (`role` field) are stored directly in the `users` collection, fulfilling the Database Access Control principle without relying on custom claims.\n*   **Invariants:** All data entities include `createdAt`, `updatedAt`, `createdBy`, and `updatedBy` fields to maintain data integrity and audit trails.\n*   **Structural Segregation:** Entities with different security postures are housed in separate top-level collections (e.g., `users` for user profiles and `apbdes` for financial data), simplifying rule writing. Nested data, such as `ApbdesDetail`, is stored in subcollections (`/apbdes/{apbdesId}/details`) to allow for scalable storage and independent management of individual detail items, while still benefiting from the overarching role-based authorization."
+  }
+}

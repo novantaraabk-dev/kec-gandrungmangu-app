@@ -1,0 +1,146 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions (Refactored)
+    // ------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    function getUserRole(userId) {
+      // Mengambil data peran dari dokumen pengguna.
+      // Hanya digunakan untuk peran non-admin untuk menghindari `get` pada kueri list.
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    // --- Verifikasi Peran (REFACTORED) ---
+    
+    // Periksa peran 'admin' berdasarkan email di token. Ini cepat dan tidak butuh `get()`.
+    // Ini adalah kunci utama perbaikan untuk kueri 'list'.
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'admin@desa.id';
+    }
+
+    // Periksa peran 'operator desa' dengan membaca dokumen dari koleksi /users.
+    // Ini hanya akan dijalankan jika isAdmin() mengembalikan false.
+    function isOperator() {
+      return isSignedIn() && getUserRole(request.auth.uid) == 'operator desa';
+    }
+
+    // Gabungkan pemeriksaan peran. `isAdmin()` akan dievaluasi terlebih dahulu.
+    // Jika admin, `isOperator()` tidak akan dijalankan, sehingga kueri 'list' berhasil.
+    function hasAdminOrOperatorRole() {
+      return isAdmin() || isOperator();
+    }
+    
+    function isIncomingDataCreatedBySelf() {
+      return request.resource.data.createdBy == request.auth.uid;
+    }
+
+    function isCreatedByUnchanged() {
+      return request.resource.data.createdBy == resource.data.createdBy;
+    }
+
+    function isUpdatedBySelf() {
+      return request.resource.data.updatedBy == request.auth.uid;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collections
+    // ------------------------------------------------------------------------
+
+    match /users/{userId} {
+      // Izinkan pengguna mengambil (get) dokumennya sendiri.
+      // Ini penting agar fungsi `isOperator()` bisa bekerja.
+      // Admin juga bisa mengambil profil pengguna manapun.
+      allow get: if isOwner(userId) || isAdmin();
+      
+      // Hanya admin yang boleh melihat daftar semua pengguna.
+      allow list: if isAdmin();
+      
+      // Izinkan pengguna membuat profilnya sendiri
+      allow create: if isOwner(userId) && isIncomingDataCreatedBySelf();
+      
+      // Pengguna bisa memperbarui datanya sendiri, admin bisa memperbarui data siapa saja.
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Pengguna bisa menghapus datanya sendiri, admin bisa menghapus data siapa saja.
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    match /apbdes/{apbdesId} {
+      allow read, write: if hasAdminOrOperatorRole();
+
+      match /details/{apbdesDetailId} {
+        allow read, write: if hasAdminOrOperatorRole();
+      }
+    }
+
+    match /monev/{monevId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /regulations/{regulationId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /spjDocuments/{spjDocumentId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+    
+    match /kpmBlts/{kpmBltId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /posyandus/{posyanduId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+    
+    match /perangkat/{perangkatId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+    
+    match /bpd/{bpdId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /rtRw/{rtRwId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /jalanDesa/{jalanId} {
+      // Memperbaiki aturan read untuk secara eksplisit mengizinkan `get` dan `list`.
+      // Aturan ini sekarang akan berfungsi untuk admin karena `hasAdminOrOperatorRole()` tidak lagi menggunakan `get()` untuk admin.
+      allow get, list: if hasAdminOrOperatorRole();
+      allow create: if hasAdminOrOperatorRole() && isIncomingDataCreatedBySelf();
+      allow update: if hasAdminOrOperatorRole() && isExistingDoc() && isCreatedByUnchanged() && isUpdatedBySelf();
+      allow delete: if hasAdminOrOperatorRole() && isExistingDoc();
+    }
+
+    match /p3keInterventions/{interventionId} {
+      allow read, write: if hasAdminOrOperatorRole();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /villageSettings/{villageId} {
+      allow read: if hasAdminOrOperatorRole();
+      allow write: if isAdmin();
+    }
+  }
+}

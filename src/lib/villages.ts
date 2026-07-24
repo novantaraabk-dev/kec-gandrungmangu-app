@@ -1,0 +1,5 @@
+export const villages = [
+    'Bulusari', 'Cinangsi', 'Cisumur', 'Gandrungmangu', 'Gandrungmanis',
+    'Gintungreja', 'Karanganyar', 'Karanggintung', 'Kertajaya', 'Layansari',
+    'Muktisari', 'Rungkang', 'Sidaurip', 'Wringinharjo'
+];
