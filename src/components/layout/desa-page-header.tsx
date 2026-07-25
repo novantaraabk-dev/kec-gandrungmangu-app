@@ -21,7 +21,7 @@ export function DesaPageHeader({ user, village }: DesaPageHeaderProps) {
     const villageName = capitalizeFirstLetter(village);
 
     return (
-        <header className="flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 shrink-0">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-xs px-4 md:px-6 shrink-0">
             <Link href={`/desa/${village}/dashboard`}>
                 <AppLogo logoUrl={logoUrl} />
             </Link>

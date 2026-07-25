@@ -8,7 +8,11 @@ import { DistrictProfileSection } from '@/components/public-dashboard/district-p
 import { DistrictGeographySection } from '@/components/public-dashboard/district-geography-section';
 import { PerangkatSummarySection } from '@/components/public-dashboard/perangkat-summary-section';
 import { P3keAnalyticsSection } from '@/components/public-dashboard/p3ke-analytics-section';
+import { HealthAnalyticsSection } from '@/components/public-dashboard/health-analytics-section';
+import { EconomyAnalyticsSection } from '@/components/public-dashboard/economy-analytics-section';
+import { AgricultureAnalyticsSection } from '@/components/public-dashboard/agriculture-analytics-section';
 import { RumahIbadahAgamaSection } from '@/components/public-dashboard/rumah-ibadah-agama-section';
+import { VillageFinanceSection } from '@/components/public-dashboard/village-finance-section';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -359,7 +363,34 @@ export default function Page() {
       {/* PROFIL KECAMATAN & MAKSUD TUJUAN SISTEM */}
       <DistrictProfileSection />
 
+      {/* VIDEO PROFIL KECAMATAN GANDRUNGMANGU (DIBAWAH PROFIL & MAKSUD TUJUAN) */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+        <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+          <span className="text-xs sm:text-sm font-bold tracking-widest text-[#0EA5E9] uppercase bg-sky-50 px-4 py-1.5 rounded-full border border-sky-100 inline-flex items-center gap-2">
+            <PlayCircle className="w-4 h-4 text-[#0EA5E9]" />
+            VIDEO PROFIL KECAMATAN
+          </span>
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-headline text-slate-900 tracking-tight">
+            Video Profil Kecamatan Gandrungmangu
+          </h2>
+          <p className="text-sm sm:text-lg text-slate-600 font-normal">
+            Saksikan tayangan profil daerah, potensi desa, serta pelayanan publik terpadu di wilayah Kecamatan Gandrungmangu.
+          </p>
+        </div>
 
+        {/* Video Player Container */}
+        <div className="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-950 relative group">
+          <div className="aspect-video w-full relative">
+            <iframe
+              src={embedVideoUrl}
+              title="Video Profil Kecamatan Gandrungmangu"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-full border-0"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* PROFIL GEOGRAFI & BATAS WILAYAH KECAMATAN */}
       <DistrictGeographySection />
@@ -681,6 +712,9 @@ export default function Page() {
         {/* REKAPITULASI KELEMBAGAAN DESA (RT/RW, PERANGKAT DESA, BPD) */}
         <PerangkatSummarySection />
 
+        {/* KEUANGAN DESA & REALISASI MONEV APBDES */}
+        <VillageFinanceSection />
+
       </section>
 
       {/* NEW ANALYTICS SECTION: JALAN DESA & JALAN KABUPATEN */}
@@ -689,34 +723,14 @@ export default function Page() {
       {/* DASHBOARD P3KE & PENANGGULANGAN KEMISKINAN EKSTREM */}
       <P3keAnalyticsSection />
 
-      {/* ------------------- BELOW THE FOLD 2: VIDEO PROFIL KECAMATAN GANDRUNGMANGU ------------------- */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
-        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <span className="text-xs sm:text-sm font-bold tracking-widest text-[#0EA5E9] uppercase bg-sky-50 px-4 py-1.5 rounded-full border border-sky-100 inline-flex items-center gap-2">
-            <PlayCircle className="w-4 h-4 text-[#0EA5E9]" />
-            VIDEO PROFIL
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-headline text-slate-900 tracking-tight">
-            Video Profil Kecamatan Gandrungmangu
-          </h2>
-          <p className="text-base sm:text-lg text-slate-600 font-normal">
-            Saksikan tayangan profil daerah, potensi desa, serta pelayanan publik terpadu di wilayah Kecamatan Gandrungmangu.
-          </p>
-        </div>
+      {/* REKAPITULASI DATA KESEHATAN (POSYANDU, KADER, BALITA, STUNTING, BUMIL KEK, LANSIA, DISABILITAS) */}
+      <HealthAnalyticsSection />
 
-        {/* Video Player Container */}
-        <div className="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-950 relative group">
-          <div className="aspect-video w-full relative">
-            <iframe
-              src={embedVideoUrl}
-              title="Video Profil Kecamatan Gandrungmangu"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="w-full h-full border-0"
-            />
-          </div>
-        </div>
-      </section>
+      {/* DASHBOARD SEKTOR EKONOMI & KELEMBAGAAN DESA */}
+      <EconomyAnalyticsSection />
+
+      {/* DASHBOARD SEKTOR PERTANIAN & PETERNAKAN */}
+      <AgricultureAnalyticsSection />
 
 
 

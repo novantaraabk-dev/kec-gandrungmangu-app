@@ -110,8 +110,16 @@ export default function AdminLayout({
           </Sheet>
           <AppHeader user={effectiveProfile} />
         </header>
-        <main className="flex-1 bg-muted/40 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {children}
+        <main className="flex-1 bg-gradient-to-br from-slate-50 via-indigo-50/20 to-slate-100/60 p-4 sm:p-6 lg:p-8 overflow-y-auto relative min-h-screen">
+          {/* Ambient Mesh Background (Matching Landing Page Aesthetic) */}
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl opacity-50" />
+            <div className="absolute top-1/2 -right-40 w-96 h-96 bg-purple-200/25 rounded-full blur-3xl opacity-50" />
+          </div>
+
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
       </div>
     </div>

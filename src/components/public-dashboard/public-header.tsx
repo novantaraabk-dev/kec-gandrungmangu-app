@@ -12,7 +12,7 @@ export function PublicHeader() {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md shadow-xs">
       <div className="container flex h-16 max-w-7xl items-center justify-between">
         <Link href="/public" className="flex items-center space-x-2">
           <AppLogo logoUrl={logoUrl} />
