@@ -11,6 +11,7 @@ import { P3keAnalyticsSection } from '@/components/public-dashboard/p3ke-analyti
 import { HealthAnalyticsSection } from '@/components/public-dashboard/health-analytics-section';
 import { EconomyAnalyticsSection } from '@/components/public-dashboard/economy-analytics-section';
 import { AgricultureAnalyticsSection } from '@/components/public-dashboard/agriculture-analytics-section';
+import { EducationAnalyticsSection } from '@/components/public-dashboard/education-analytics-section';
 import { RumahIbadahAgamaSection } from '@/components/public-dashboard/rumah-ibadah-agama-section';
 import { VillageFinanceSection } from '@/components/public-dashboard/village-finance-section';
 import Image from 'next/image';
@@ -731,6 +732,9 @@ export default function Page() {
 
       {/* DASHBOARD SEKTOR PERTANIAN & PETERNAKAN */}
       <AgricultureAnalyticsSection />
+
+      {/* DASHBOARD SEKTOR PENDIDIKAN (128 SEKOLAH, SISWA, GURU & TENDIK) */}
+      <EducationAnalyticsSection />
 
 
 
