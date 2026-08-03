@@ -175,7 +175,7 @@ export function HealthAnalyticsSection() {
   ]);
 
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 border-t border-rose-100/80 space-y-6">
+    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-gradient-to-br from-pink-50/90 via-rose-50/50 to-fuchsia-50/70 rounded-3xl border border-pink-300/90 shadow-md my-6 space-y-6">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-rose-100 pb-4">

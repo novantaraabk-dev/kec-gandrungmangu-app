@@ -236,7 +236,7 @@ export function EducationAnalyticsSection() {
   }, [currentCategory, searchQuery]);
 
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 border-t border-sky-100/90 space-y-8">
+    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-gradient-to-br from-indigo-50/90 via-purple-50/50 to-sky-50/70 rounded-3xl border border-indigo-300/90 shadow-md my-6 space-y-8">
       
       {/* SECTION HEADER & TITLE */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-sky-100 pb-4 sm:pb-6">

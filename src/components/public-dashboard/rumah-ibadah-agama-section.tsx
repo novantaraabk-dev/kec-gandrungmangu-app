@@ -135,9 +135,9 @@ export function RumahIbadahAgamaSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="p-[2px] rounded-[24px] sm:rounded-[32px] bg-gradient-to-br from-cyan-500 via-sky-600 to-amber-500 shadow-2xl shadow-sky-500/15 relative overflow-hidden"
+        className="p-[2px] rounded-[24px] sm:rounded-[32px] bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 shadow-2xl shadow-purple-500/15 relative overflow-hidden my-6"
       >
-        <div className="bg-white/95 backdrop-blur-xl rounded-[22px] sm:rounded-[30px] p-4 sm:p-10 relative overflow-hidden space-y-6 sm:space-y-8">
+        <div className="bg-gradient-to-br from-purple-50/95 via-violet-50/60 to-white backdrop-blur-xl rounded-[22px] sm:rounded-[30px] p-4 sm:p-10 relative overflow-hidden space-y-6 sm:space-y-8 border border-purple-200/90">
           
           {/* Ambient Background Blobs */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-200/40 rounded-full blur-3xl -z-10 pointer-events-none animate-pulse" />
@@ -147,13 +147,13 @@ export function RumahIbadahAgamaSection() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-sky-100 pb-4 sm:pb-6">
             <div>
               <div className="inline-flex items-center gap-2 mb-2 sm:mb-3">
-                <span className="text-[10px] sm:text-xs font-black tracking-widest text-sky-900 uppercase bg-gradient-to-r from-sky-100 via-teal-100 to-amber-100 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-sky-200 shadow-sm flex items-center gap-1.5">
-                  <University className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600" />
+                <span className="text-[10px] sm:text-xs font-black tracking-widest text-white uppercase bg-purple-600 px-3.5 py-1.5 rounded-full border border-purple-400 shadow-xs inline-flex items-center gap-1.5">
+                  <University className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                   DATA UMUM & SARANA KEAGAMAAN
                 </span>
               </div>
               
-              <h2 className="text-xl sm:text-3xl lg:text-4xl font-black font-headline tracking-tight leading-tight bg-gradient-to-r from-sky-900 via-teal-800 to-amber-700 bg-clip-text text-transparent">
+              <h2 className="text-xl sm:text-3xl lg:text-4xl font-black font-headline tracking-tight leading-tight text-slate-900">
                 Rumah Ibadah & Kepercayaan Kec. Gandrungmangu
               </h2>
               

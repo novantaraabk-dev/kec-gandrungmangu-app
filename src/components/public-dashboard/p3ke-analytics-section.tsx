@@ -84,9 +84,9 @@ export function P3keAnalyticsSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="p-[2px] rounded-[24px] sm:rounded-[32px] bg-gradient-to-br from-indigo-600 via-sky-500 to-amber-500 shadow-2xl shadow-indigo-500/15 relative overflow-hidden"
+        className="p-[2px] rounded-[24px] sm:rounded-[32px] bg-gradient-to-br from-rose-600 via-red-600 to-pink-600 shadow-2xl shadow-rose-500/15 relative overflow-hidden my-6"
       >
-        <div className="bg-white/95 backdrop-blur-xl rounded-[22px] sm:rounded-[30px] p-4 sm:p-10 relative overflow-hidden space-y-6 sm:space-y-8">
+        <div className="bg-gradient-to-br from-rose-50/95 via-red-50/60 to-white backdrop-blur-xl rounded-[22px] sm:rounded-[30px] p-4 sm:p-10 relative overflow-hidden space-y-6 sm:space-y-8 border border-rose-200/90">
           
           {/* Ambient Background Blobs */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200/40 rounded-full blur-3xl -z-10 pointer-events-none animate-pulse" />

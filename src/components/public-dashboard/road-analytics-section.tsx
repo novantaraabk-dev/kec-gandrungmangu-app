@@ -292,7 +292,7 @@ export function RoadAnalyticsSection() {
       const rb = Number(j.kondisiRusakBerat) || 0;
       const p = Number(j.panjangRuas) || (baik + sedang + rr + rb);
       const damage = sedang + rr + rb;
-      const keb = damage * 2000000;
+      const keb = damage * 3000000;
       const usulan = Number(j.paguUsulan2026 ?? j.paguUsulan ?? 0);
 
       totalPanjang += p;
@@ -349,7 +349,7 @@ export function RoadAnalyticsSection() {
   }, [activeJalanKabupatenList, searchJalanKabupaten]);
 
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 space-y-8">
+    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-gradient-to-br from-sky-50/90 via-cyan-50/50 to-blue-50/70 rounded-3xl border border-sky-300/90 shadow-md my-6 space-y-8">
       
       {/* SECTION HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-6">

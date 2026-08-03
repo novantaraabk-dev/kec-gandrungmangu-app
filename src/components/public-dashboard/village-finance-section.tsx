@@ -31,7 +31,7 @@ const formatCurrency = (val: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
 };
 
-// Format concise currency helper (e.g. 16,85 M)
+// Format concise currency helper (e.g. 11,44 M)
 const formatShortCurrency = (val: number) => {
   if (!val || isNaN(val)) return 'Rp 0';
   if (val >= 1_000_000_000) {
@@ -43,22 +43,22 @@ const formatShortCurrency = (val: number) => {
   return formatCurrency(val);
 };
 
-// 14 Villages Financial & Monev Default Dataset (Updated with exact 2026 Dana Desa Reguler allocations)
+// 14 Villages Financial & Monev Exact Dataset (Synced with Admin APBDes System)
 const defaultVillageFinanceData = [
-  { village: 'GANDRUNGMANGU', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 96.5, realisasiFisikPct: 98.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'GANDRUNGMANIS', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.2, realisasiFisikPct: 95.5, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'CISUMUR', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 95.8, realisasiFisikPct: 97.2, statusSpj: 'SPJ Lengkap', statusDesa: 'MANDIRI' },
-  { village: 'KARANGANYAR', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 93.5, realisasiFisikPct: 95.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'CINANGSI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 95.0, realisasiFisikPct: 96.5, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'KARANGGINTUNG', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.8, realisasiFisikPct: 96.0, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
-  { village: 'RUNGKANG', pagu: 801832000, dds: 356832000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 343832000, bidang3: 60000000, bidang4: 108000000, bidang5: 30000000, realisasiKeuanganPct: 92.0, realisasiFisikPct: 94.0, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
-  { village: 'SIDAURIP', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.5, realisasiFisikPct: 96.2, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'GINTUNGREJA', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 93.8, realisasiFisikPct: 95.4, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'LAYANSARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 96.0, realisasiFisikPct: 97.8, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'BULUSARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.0, realisasiFisikPct: 95.8, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
-  { village: 'MUKTISARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 95.2, realisasiFisikPct: 96.8, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'WRINGINHARJO', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.6, realisasiFisikPct: 96.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
-  { village: 'KERTAJAYA', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 94.1, realisasiFisikPct: 95.6, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
+  { village: 'GANDRUNGMANGU', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 68.4, realisasiFisikPct: 98.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'GANDRUNGMANIS', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 66.6, realisasiFisikPct: 95.5, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'CISUMUR', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 40.1, realisasiFisikPct: 97.2, statusSpj: 'SPJ Lengkap', statusDesa: 'MANDIRI' },
+  { village: 'KARANGANYAR', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 15.0, realisasiFisikPct: 95.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'CINANGSI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 41.8, realisasiFisikPct: 96.5, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'KARANGGINTUNG', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 54.9, realisasiFisikPct: 96.0, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
+  { village: 'RUNGKANG', pagu: 801832000, dds: 356832000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 343832000, bidang3: 60000000, bidang4: 108000000, bidang5: 30000000, realisasiKeuanganPct: 58.1, realisasiFisikPct: 94.0, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
+  { village: 'SIDAURIP', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 21.9, realisasiFisikPct: 96.2, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'GINTUNGREJA', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 58.5, realisasiFisikPct: 95.4, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'LAYANSARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 54.7, realisasiFisikPct: 97.8, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'BULUSARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 58.3, realisasiFisikPct: 95.8, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
+  { village: 'MUKTISARI', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 58.1, realisasiFisikPct: 96.8, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'WRINGINHARJO', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 67.4, realisasiFisikPct: 96.0, statusSpj: 'SPJ Lengkap', statusDesa: 'MAJU' },
+  { village: 'KERTAJAYA', pagu: 818456000, dds: 373456000, add: 310000000, pbh: 45000000, pades: 60000000, dll: 30000000, bidang1: 260000000, bidang2: 360000000, bidang3: 60000000, bidang4: 108456000, bidang5: 30000000, realisasiKeuanganPct: 66.5, realisasiFisikPct: 95.6, statusSpj: 'SPJ Lengkap', statusDesa: 'BERKEMBANG' },
 ];
 
 export function VillageFinanceSection() {
@@ -90,18 +90,42 @@ export function VillageFinanceSection() {
   }, [firestore]);
   const { data: firestorePrioritas } = useCollection<any>(prioritasQuery);
 
-  // Aggregated Village Data with Firestore Monev Realization & Prioritas DDS Overrides
+  // Aggregated Village Data with Dynamic Firestore APBDes & Monev Merging
   const villageList = useMemo(() => {
-    const monevRealizationMap: Record<string, number> = {};
-    if (firestoreMonev && firestoreMonev.length > 0) {
-      firestoreMonev.forEach((m) => {
-        if (m.village && m.realization) {
-          const key = m.village.toUpperCase();
-          monevRealizationMap[key] = (monevRealizationMap[key] || 0) + Number(m.realization);
+    // Map Firestore APBDes documents by village key
+    const apbdesMap: Record<string, any> = {};
+    if (firestoreApbdes && firestoreApbdes.length > 0) {
+      firestoreApbdes.forEach((item) => {
+        const vName = item.village || (item.id ? item.id.split('-')[0] : '');
+        if (vName) {
+          const key = vName.toUpperCase();
+          apbdesMap[key] = item;
         }
       });
     }
 
+    // Map Firestore Monev entries by village key
+    const monevRealizationMap: Record<string, { totalRealization: number; totalPhysical: number; count: number; spjIncomplete: boolean }> = {};
+    if (firestoreMonev && firestoreMonev.length > 0) {
+      firestoreMonev.forEach((m) => {
+        if (m.village) {
+          const key = m.village.toUpperCase();
+          if (!monevRealizationMap[key]) {
+            monevRealizationMap[key] = { totalRealization: 0, totalPhysical: 0, count: 0, spjIncomplete: false };
+          }
+          monevRealizationMap[key].totalRealization += Number(m.realization || 0);
+          if ((m as any).physicalProgress) {
+            monevRealizationMap[key].totalPhysical += Number((m as any).physicalProgress);
+          }
+          monevRealizationMap[key].count += 1;
+          if (m.status && !m.status.toLowerCase().includes('lengkap')) {
+            monevRealizationMap[key].spjIncomplete = true;
+          }
+        }
+      });
+    }
+
+    // Map Firestore Prioritas Dana Desa
     const prioritasDdsMap: Record<string, number> = {};
     if (firestorePrioritas && firestorePrioritas.length > 0) {
       firestorePrioritas.forEach((p) => {
@@ -114,23 +138,54 @@ export function VillageFinanceSection() {
 
     return defaultVillageFinanceData.map((v) => {
       const vKey = v.village.toUpperCase();
+      const fsApbdes = apbdesMap[vKey];
       
-      const fsDds = prioritasDdsMap[vKey];
-      const dds = fsDds !== undefined && fsDds > 0 ? fsDds : v.dds;
+      // Dynamic Pagu
+      const pagu = fsApbdes?.revenue || fsApbdes?.pagu || v.pagu;
+      
+      // Dynamic Revenue Sources
+      const revSources = fsApbdes?.revenueSources || {};
+      const ddsFromFs = revSources['DDS'] || revSources['Dana Desa'] || prioritasDdsMap[vKey];
+      const dds = ddsFromFs !== undefined && ddsFromFs > 0 ? ddsFromFs : v.dds;
 
-      const fsRealization = monevRealizationMap[vKey];
-      const fallbackAmount = (v as any).realisasiAmount || Math.round(v.pagu * (v.realisasiKeuanganPct / 100));
-      const realisasiAmount = fsRealization !== undefined && fsRealization > 0 ? fsRealization : fallbackAmount;
-      const realisasiKeuanganPct = Number(((realisasiAmount / (v.pagu || 1)) * 100).toFixed(1));
+      const addFromFs = revSources['ADD'] || revSources['Alokasi Dana Desa'];
+      const add = addFromFs !== undefined && addFromFs > 0 ? addFromFs : v.add;
+
+      const pbhFromFs = revSources['PBH'] || revSources['Bagi Hasil Pajak'] || revSources['Bagi Hasil'];
+      const pbh = pbhFromFs !== undefined && pbhFromFs > 0 ? pbhFromFs : v.pbh;
+
+      const padesFromFs = revSources['PADES'] || revSources['Pendapatan Asli Desa'] || revSources['PADes'];
+      const pades = padesFromFs !== undefined && padesFromFs > 0 ? padesFromFs : v.pades;
+
+      // Dynamic Monev Realization
+      const fsMonevInfo = monevRealizationMap[vKey];
+      const fallbackAmount = Math.round(pagu * (v.realisasiKeuanganPct / 100));
+      const realisasiAmount = fsMonevInfo?.totalRealization && fsMonevInfo.totalRealization > 0
+        ? fsMonevInfo.totalRealization
+        : fallbackAmount;
+
+      const realisasiKeuanganPct = Number(((realisasiAmount / (pagu || 1)) * 100).toFixed(1));
+
+      const realisasiFisikPct = fsMonevInfo && fsMonevInfo.count > 0 && fsMonevInfo.totalPhysical > 0
+        ? Number((fsMonevInfo.totalPhysical / fsMonevInfo.count).toFixed(1))
+        : v.realisasiFisikPct;
+
+      const statusSpj = fsMonevInfo ? (fsMonevInfo.spjIncomplete ? 'SPJ Belum Lengkap' : 'SPJ Lengkap') : v.statusSpj;
 
       return {
         ...v,
+        pagu,
         dds,
+        add,
+        pbh,
+        pades,
         realisasiAmount,
         realisasiKeuanganPct,
+        realisasiFisikPct,
+        statusSpj,
       };
     });
-  }, [firestoreMonev, firestorePrioritas]);
+  }, [firestoreApbdes, firestoreMonev, firestorePrioritas]);
 
   // Aggregated Totals
   const totals = useMemo(() => {
@@ -147,6 +202,7 @@ export function VillageFinanceSection() {
         acc.bidang3 += curr.bidang3;
         acc.bidang4 += curr.bidang4;
         acc.bidang5 += curr.bidang5;
+        acc.realisasiAmount += curr.realisasiAmount;
         return acc;
       },
       {
@@ -161,14 +217,20 @@ export function VillageFinanceSection() {
         bidang3: 0,
         bidang4: 0,
         bidang5: 0,
+        realisasiAmount: 0,
       }
     );
   }, [villageList]);
 
   // Overall Realisasi Averages
   const avgRealisasi = useMemo(() => {
-    const totalKeuanganPct = villageList.reduce((acc, curr) => acc + curr.realisasiKeuanganPct, 0);
+    const totalRealisasiAmount = villageList.reduce((acc, curr) => acc + curr.realisasiAmount, 0);
+    const totalPagu = totals.pagu || 1;
+    const keuanganPct = (Number((totalRealisasiAmount / totalPagu) * 100)).toFixed(1);
+
     const totalFisikPct = villageList.reduce((acc, curr) => acc + curr.realisasiFisikPct, 0);
+    const fisikPct = (totalFisikPct / villageList.length).toFixed(1);
+
     const spjLengkapCount = villageList.filter(v => v.statusSpj === 'SPJ Lengkap').length;
 
     const mandiriCount = villageList.filter(v => (v as any).statusDesa === 'MANDIRI').length || 1;
@@ -176,15 +238,15 @@ export function VillageFinanceSection() {
     const berkembangCount = villageList.filter(v => (v as any).statusDesa === 'BERKEMBANG').length || 4;
 
     return {
-      keuanganPct: (totalKeuanganPct / villageList.length).toFixed(1),
-      fisikPct: (totalFisikPct / villageList.length).toFixed(1),
+      keuanganPct,
+      fisikPct,
       spjLengkapCount,
       totalVillageCount: villageList.length,
       mandiriCount,
       majuCount,
       berkembangCount,
     };
-  }, [villageList]);
+  }, [villageList, totals.pagu]);
 
   // Total Realisasi Monev Amount & Total Realisasi Monev % across all 14 villages
   const totalMonevSummary = useMemo(() => {
@@ -211,7 +273,7 @@ export function VillageFinanceSection() {
     ];
   }, [totals]);
 
-  // Pie Chart Slices for Belanja per Bidang (matching uploaded infographic reference)
+  // Pie Chart Slices for Belanja per Bidang
   const bidangSlices = useMemo(() => {
     const total = totals.pagu || 1;
     return [
@@ -223,7 +285,7 @@ export function VillageFinanceSection() {
     ];
   }, [totals]);
 
-  // Pie Chart Slices for Prioritas Dana Desa 2026 (matching exact table data / Firestore)
+  // Pie Chart Slices for Prioritas Dana Desa 2026
   const prioritasDanaSlices = useMemo(() => {
     let blt = 494400000;
     let iklim = 283967220;
@@ -252,12 +314,6 @@ export function VillageFinanceSection() {
 
   // Active Slices & Totals based on Active Tab
   const activeSlices = activeChartTab === 'sumber' ? sumberDanaSlices : activeChartTab === 'bidang' ? bidangSlices : prioritasDanaSlices;
-  const activeTotalAmount = useMemo(() => {
-    if (activeChartTab === 'prioritas') {
-      return prioritasDanaSlices.reduce((acc, curr) => acc + curr.amount, 0);
-    }
-    return totals.pagu;
-  }, [activeChartTab, prioritasDanaSlices, totals.pagu]);
 
   // Sorted Village List for Ranking Chart
   const sortedVillages = useMemo(() => {
@@ -269,23 +325,22 @@ export function VillageFinanceSection() {
     });
   }, [villageList, selectedSort]);
 
-  const maxPagu = useMemo(() => Math.max(...villageList.map(v => v.pagu)), [villageList]);
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 25 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="mt-10 pt-10 border-t border-indigo-100/90 space-y-8"
-    >
+    <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <motion.div
+        initial={{ opacity: 0, y: 25 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="p-6 sm:p-10 rounded-3xl bg-gradient-to-br from-emerald-50/95 via-teal-50/60 to-slate-50 border border-emerald-200/90 shadow-md space-y-8"
+      >
       
       {/* SECTION HEADER & NAV LINK */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-indigo-100 pb-4 sm:pb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-emerald-200/80 pb-4 sm:pb-6">
         <div>
           <div className="inline-flex items-center gap-2 mb-2">
-            <span className="text-[10px] sm:text-xs font-black tracking-widest text-indigo-700 uppercase bg-gradient-to-r from-indigo-100 via-purple-100 to-sky-100 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-indigo-200 shadow-sm flex items-center gap-1.5">
-              <Landmark className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-[10px] sm:text-xs font-black tracking-widest text-white uppercase bg-emerald-700 px-3.5 py-1.5 rounded-full border border-emerald-500 shadow-xs flex items-center gap-1.5">
+              <Landmark className="w-4 h-4 text-white" />
               KEUANGAN DESA & REALISASI MONEV
             </span>
           </div>
@@ -303,7 +358,7 @@ export function VillageFinanceSection() {
         <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
           <button
             onClick={() => setShowTable(!showTable)}
-            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3.5 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-indigo-800 bg-white hover:bg-indigo-50 border border-indigo-200 px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer"
           >
             <Table className="w-4 h-4 text-indigo-600" />
             <span>{showTable ? 'Sembunyikan Tabel Financial' : 'Lihat Matriks Financial 14 Desa'}</span>
@@ -325,432 +380,298 @@ export function VillageFinanceSection() {
         
         {/* Stat 1: Total Pagu APBDes Kecamatan */}
         <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-indigo-50/90 via-purple-50/40 to-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-indigo-200/90 shadow-md hover:shadow-xl transition-all"
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-indigo-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-300">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-black text-indigo-800 bg-indigo-100 px-2.5 py-0.5 rounded-full border border-indigo-200 uppercase">
+                PAGU ANGGARAN
+              </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] font-black text-indigo-700 bg-indigo-100/90 px-2.5 py-0.5 rounded-full border border-indigo-200 uppercase">
-              PAGU ANGGARAN
-            </span>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total APBDes 14 Desa</p>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-headline mt-1 tracking-tight">
+              {formatShortCurrency(totals.pagu)}
+            </h3>
           </div>
-          <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total APBDes 14 Desa</p>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-headline mt-1 tracking-tight">
-            {formatShortCurrency(totals.pagu)}
-          </h3>
-          <p className="text-[10px] sm:text-xs text-slate-600 font-medium mt-1">14 Desa di Gandrungmangu</p>
+          <p className="text-[10px] sm:text-xs text-indigo-700 font-bold mt-2 pt-2 border-t border-indigo-50">14 Desa di Gandrungmangu</p>
         </motion.div>
 
         {/* Stat 2: Total Dana Desa (DDS) */}
         <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-sky-50/90 via-cyan-50/40 to-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-sky-200/90 shadow-md hover:shadow-xl transition-all"
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-sky-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center font-bold shadow-md shadow-sky-300">
-              <Landmark className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <Coins className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-black text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-200 uppercase">
+                APBN 2026
+              </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] font-black text-sky-700 bg-sky-100/90 px-2.5 py-0.5 rounded-full border border-sky-200 uppercase">
-              DANA DESA (APBN)
-            </span>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Dana Desa (DDS) APBN</p>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-headline mt-1 tracking-tight">
+              {formatShortCurrency(totals.dds)}
+            </h3>
           </div>
-          <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total DDS (Dana Desa)</p>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-headline mt-1 tracking-tight">
-            {formatShortCurrency(totals.dds)}
-          </h3>
-          <p className="text-[10px] sm:text-xs text-slate-600 font-medium mt-1">45.5% dari Total APBDes</p>
+          <p className="text-[10px] sm:text-xs text-sky-700 font-bold mt-2 pt-2 border-t border-sky-50">Rata-rata ~Rp 372 Jt / Desa</p>
         </motion.div>
 
-        {/* Stat 3: Realisasi Keuangan Monev */}
+        {/* Stat 3: Total Alokasi Dana Desa (ADD) */}
         <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-200/90 shadow-md hover:shadow-xl transition-all"
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-teal-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-300">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-black text-teal-800 bg-teal-100 px-2.5 py-0.5 rounded-full border border-teal-200 uppercase">
+                APBD KABUPATEN
+              </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] font-black text-emerald-700 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-200 uppercase">
-              HASIL MONEV
-            </span>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Alokasi Dana Desa (ADD)</p>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-headline mt-1 tracking-tight">
+              {formatShortCurrency(totals.add)}
+            </h3>
           </div>
-          <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Rata-rata Realisasi Keuangan</p>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-headline mt-1 tracking-tight">
-            {avgRealisasi.keuanganPct}% <span className="text-xs sm:text-sm font-bold text-emerald-600">Tercapai</span>
-          </h3>
-          <p className="text-[10px] sm:text-xs text-slate-600 font-medium mt-1">Realisasi Fisik: {avgRealisasi.fisikPct}%</p>
+          <p className="text-[10px] sm:text-xs text-teal-700 font-bold mt-2 pt-2 border-t border-teal-50">Siltap & Operasional Pemdes</p>
         </motion.div>
 
-        {/* Stat 4: Verifikasi SPJ Lengkap */}
+        {/* Stat 4: Capaian Realisasi Keuangan Monev */}
         <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-purple-50/90 via-indigo-50/40 to-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-purple-200/90 shadow-md hover:shadow-xl transition-all"
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-emerald-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-300">
-              <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200 uppercase">
+                SERAPAN MONEV
+              </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] font-black text-purple-700 bg-purple-100/90 px-2.5 py-0.5 rounded-full border border-purple-200 uppercase">
-              STATUS SPJ DESA
-            </span>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Realisasi Keuangan (%)</p>
+            <h3 className="text-xl sm:text-2xl font-black text-emerald-700 font-headline mt-1 tracking-tight">
+              {avgRealisasi.keuanganPct}%
+            </h3>
           </div>
-          <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Kelengkapan SPJ Monev</p>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-headline mt-1 tracking-tight">
-            {avgRealisasi.spjLengkapCount} / {avgRealisasi.totalVillageCount} <span className="text-xs sm:text-sm font-bold text-purple-600">Desa</span>
-          </h3>
-          <p className="text-[10px] sm:text-xs text-slate-600 font-medium mt-1">100% SPJ Lengkap Terverifikasi</p>
+          <p className="text-[10px] sm:text-xs text-emerald-700 font-bold mt-2 pt-2 border-t border-emerald-50">
+            {formatShortCurrency(totalMonevSummary.totalRealisasiAmount)} Terserap
+          </p>
         </motion.div>
 
-        {/* Stat 5: Status IDM Desa (Kartu Didedikasikan di Sebelah STATUS SPJ) */}
+        {/* Stat 5: Status Laporan SPJ Monev */}
         <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-teal-50/90 via-emerald-50/40 to-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-teal-200/90 shadow-md hover:shadow-xl transition-all col-span-2 sm:col-span-1 lg:col-span-1"
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-purple-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between col-span-2 sm:col-span-1"
         >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 text-white flex items-center justify-center font-bold shadow-md shadow-teal-300">
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <ClipboardCheck className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-black text-purple-800 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-200 uppercase">
+                AKUNTABILITAS
+              </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] font-black text-teal-700 bg-teal-100/90 px-2.5 py-0.5 rounded-full border border-teal-200 uppercase">
-              STATUS IDM DESA
-            </span>
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Status Laporan SPJ</p>
+            <h3 className="text-xl sm:text-2xl font-black text-purple-900 font-headline mt-1 tracking-tight">
+              {avgRealisasi.spjLengkapCount}/14 Desa
+            </h3>
           </div>
-          <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Klasifikasi Status Desa</p>
-
-          <div className="mt-2 space-y-1 sm:space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200/80 text-emerald-900">
-              <span>Mandiri</span>
-              <span className="font-black text-emerald-700">{avgRealisasi.mandiriCount} Desa</span>
-            </div>
-            <div className="flex items-center justify-between text-[11px] font-bold bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200/80 text-blue-900">
-              <span>Maju</span>
-              <span className="font-black text-blue-700">{avgRealisasi.majuCount} Desa</span>
-            </div>
-            <div className="flex items-center justify-between text-[11px] font-bold bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/80 text-amber-900">
-              <span>Berkembang</span>
-              <span className="font-black text-amber-700">{avgRealisasi.berkembangCount} Desa</span>
-            </div>
-          </div>
+          <p className="text-[10px] sm:text-xs text-purple-700 font-bold mt-2 pt-2 border-t border-purple-50">
+            100% SPJ Lengkap & Terverifikasi
+          </p>
         </motion.div>
 
       </div>
 
-      {/* 2 MAIN SECTIONS: (1) PIE CHART INFOGRAPHIC (2) RANKING REALISASI MONEV PER DESA */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+      {/* 2 MAIN SECTIONS: (1) INFOGRAPHIC PIE CHART (2) RANKING REALISASI PER DESA */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* LEFT COLUMN: PIE CHART INFOGRAPHIC (SUMBER DANA & BIDANG) (7 COLS) */}
-        <div className="lg:col-span-7 bg-slate-50/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-6">
+        {/* LEFT COLUMN: PIE CHART INFOGRAPHIC (7 COLS) */}
+        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-xl p-5 sm:p-7 space-y-6">
           
-          {/* TAB SWITCHER & HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 font-headline flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 font-headline flex items-center gap-2">
                 <PieChartIcon className="w-4 h-4 text-indigo-600" />
                 {activeChartTab === 'sumber' 
-                  ? 'Diagram Pie Total per Sumber Anggaran' 
+                  ? 'Struktur Pendapatan APBDes 14 Desa' 
                   : activeChartTab === 'bidang' 
-                  ? 'Diagram Pie Rincian Belanja per Bidang' 
-                  : 'Diagram Pie Prioritas Dana Desa 2026'}
+                  ? 'Alokasi Belanja APBDes per Bidang' 
+                  : 'Prioritas Penggunaan Dana Desa 2026'}
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Visualisasi infografis lingkaran proporsi APBDes 14 Desa</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Proporsi persentase alokasi anggaran APBDes di Kecamatan Gandrungmangu.
+              </p>
             </div>
 
-            {/* TAB SELECTOR BUTTONS (3 TABS) */}
-            <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-2xl border border-slate-300 shadow-inner flex-wrap sm:flex-nowrap">
+            {/* TAB SELECTOR BUTTONS */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 self-start sm:self-auto">
               <button
                 onClick={() => setActiveChartTab('sumber')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeChartTab === 'sumber'
-                    ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                    ? 'bg-white text-indigo-700 shadow-sm font-black'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Coins className="w-3.5 h-3.5" />
-                <span>Sumber Anggaran</span>
+                Sumber Dana
               </button>
-
               <button
                 onClick={() => setActiveChartTab('bidang')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeChartTab === 'bidang'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                    ? 'bg-white text-indigo-700 shadow-sm font-black'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Belanja per Bidang</span>
+                Per Bidang
               </button>
-
               <button
                 onClick={() => setActiveChartTab('prioritas')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeChartTab === 'prioritas'
-                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                    ? 'bg-white text-indigo-700 shadow-sm font-black'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Prioritas DD</span>
+                Prioritas DDS
               </button>
             </div>
           </div>
 
-          {/* SVG INFOGRAPHIC PIE CHART WITH NUMBERED PINS (STYLE MATCHING USER REFERENCE IMAGE) */}
-          <div className="flex flex-col items-center justify-center relative py-2">
-            <div className="relative w-72 h-72 sm:w-96 sm:h-96 flex items-center justify-center">
-              
-              <svg viewBox="0 0 320 320" className="w-full h-full drop-shadow-xl overflow-visible">
-                {(() => {
-                  let cumulativeAngle = -90;
-                  const r = 78;
-                  const strokeWidth = 34;
-                  const circumference = 2 * Math.PI * r;
+          {/* SVG INFOGRAPHIC PIE CHART WITH NUMBERED PINS */}
+          <div className="relative flex flex-col items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-2xl border border-slate-100">
+            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+              <svg viewBox="0 0 200 200" className="w-full h-full transform -rotate-90 filter drop-shadow-md">
+                {activeSlices.reduce<{ accumAngle: number; paths: React.ReactNode[] }>((acc, slice, i) => {
+                  const total = activeSlices.reduce((sum, s) => sum + s.amount, 0) || 1;
+                  const pct = slice.amount / total;
+                  const angle = pct * 360;
+                  const start = acc.accumAngle;
+                  acc.accumAngle += angle;
 
-                  // Pass 1: Compute raw geometries & initial leader line coordinates
-                  const items = activeSlices.map((slice, index) => {
-                    const percentage = slice.pct / 100;
-                    const angle = percentage * 360;
-                    const startAngle = cumulativeAngle;
-                    const endAngle = cumulativeAngle + angle;
-                    cumulativeAngle += angle;
+                  const startRad = ((start - 90) * Math.PI) / 180;
+                  const endRad = ((acc.accumAngle - 90) * Math.PI) / 180;
 
-                    const midAngle = (startAngle + endAngle) / 2;
-                    const rad = (midAngle * Math.PI) / 180;
+                  const r = 80;
+                  const x1 = 100 + r * Math.cos(startRad);
+                  const y1 = 100 + r * Math.sin(startRad);
+                  const x2 = 100 + r * Math.cos(endRad);
+                  const y2 = 100 + r * Math.sin(endRad);
 
-                    const strokeDasharray = `${(percentage * circumference).toFixed(1)} ${(circumference - percentage * circumference).toFixed(1)}`;
-                    const strokeDashoffset = ((-startAngle - 90) / 360 * circumference).toFixed(1);
+                  const largeArc = angle > 180 ? 1 : 0;
+                  const d = `M 100 100 L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
-                    const rStart = 95;
-                    const rElbow = 118 + (index % 3) * 15;
+                  acc.paths.push(
+                    <path
+                      key={i}
+                      d={d}
+                      fill={slice.color}
+                      className="transition-all duration-300 hover:opacity-85 hover:scale-102 cursor-pointer"
+                    >
+                      <title>{`${slice.label}: ${formatCurrency(slice.amount)} (${slice.pct}%)`}</title>
+                    </path>
+                  );
+                  return acc;
+                }, { accumAngle: 0, paths: [] }).paths}
 
-                    const x1 = 160 + rStart * Math.cos(rad);
-                    const y1 = 160 + rStart * Math.sin(rad);
-                    let x2 = 160 + rElbow * Math.cos(rad);
-                    let y2 = 160 + rElbow * Math.sin(rad);
-
-                    let isRight = Math.cos(rad) >= -0.15;
-                    if (Math.sin(rad) < -0.7 && Math.abs(Math.cos(rad)) < 0.45) {
-                      isRight = index % 2 === 0;
-                    }
-
-                    let x3 = isRight ? Math.max(x2 + 20, 195) : Math.min(x2 - 20, 125);
-
-                    return {
-                      slice,
-                      index,
-                      percentage,
-                      strokeDasharray,
-                      strokeDashoffset,
-                      x1, y1, x2, y2, x3, isRight,
-                    };
-                  });
-
-                  // Pass 2: Anti-collision adjustments grouped by Right and Left sides
-                  const rightItems = items.filter(it => it.isRight).sort((a, b) => a.y2 - b.y2);
-                  const leftItems = items.filter(it => !it.isRight).sort((a, b) => a.y2 - b.y2);
-
-                  const enforceMinSpacing = (group: typeof items) => {
-                    for (let i = 1; i < group.length; i++) {
-                      const prev = group[i - 1];
-                      const curr = group[i];
-                      const minDist = 26; // Ensure 26px vertical distance between text centers
-                      if (curr.y2 - prev.y2 < minDist) {
-                        curr.y2 = prev.y2 + minDist;
-                      }
-                    }
-                  };
-
-                  enforceMinSpacing(rightItems);
-                  enforceMinSpacing(leftItems);
-
-                  return items.map(({ slice, strokeDasharray, strokeDashoffset, x1, y1, x2, y2, x3, isRight }) => (
-                    <g key={slice.num} className="group cursor-pointer">
-                      {/* Arc Donut Segment */}
-                      <circle
-                        cx="160"
-                        cy="160"
-                        r={r}
-                        stroke={slice.color}
-                        strokeWidth={strokeWidth}
-                        fill="transparent"
-                        strokeDasharray={strokeDasharray}
-                        strokeDashoffset={strokeDashoffset}
-                        transform="rotate(-90 160 160)"
-                        className="transition-all duration-300 hover:stroke-[40] opacity-95 hover:opacity-100"
-                      >
-                        <title>{`${slice.label}: ${formatCurrency(slice.amount)} (${slice.pct}%)`}</title>
-                      </circle>
-
-                      {/* Step Leader Line */}
-                      <polyline
-                        points={`${x1.toFixed(1)},${y1.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)} ${x3.toFixed(1)},${y2.toFixed(1)}`}
-                        stroke={slice.color}
-                        strokeWidth="1.8"
-                        strokeDasharray="2.5,2.5"
-                        fill="none"
-                        className="opacity-80 group-hover:opacity-100 transition-opacity"
-                      />
-                      <circle cx={x1.toFixed(1)} cy={y1.toFixed(1)} r="3" fill={slice.color} />
-
-                      {/* Numbered Pin Badge Circle (Style from uploaded reference image) */}
-                      <circle cx={x3.toFixed(1)} cy={y2.toFixed(1)} r="8.5" fill={slice.color} className="shadow-md" />
-                      <text
-                        x={x3.toFixed(1)}
-                        y={(y2 + 3).toFixed(1)}
-                        textAnchor="middle"
-                        fill="#FFFFFF"
-                        className="text-[8px] font-black font-mono pointer-events-none select-none"
-                      >
-                        {slice.num}
-                      </text>
-
-                      {/* Text Callout Label attached to Leader Line Pin */}
-                      <text
-                        x={isRight ? (x3 + 12).toFixed(1) : (x3 - 12).toFixed(1)}
-                        y={y2.toFixed(1)}
-                        textAnchor={isRight ? "start" : "end"}
-                        className="pointer-events-none select-none transition-all group-hover:scale-105"
-                      >
-                        <tspan
-                          x={isRight ? (x3 + 12).toFixed(1) : (x3 - 12).toFixed(1)}
-                          dy="-3"
-                          className="text-[8px] sm:text-[8.5px] font-black fill-slate-900 font-headline"
-                        >
-                          {slice.shortLabel}
-                        </tspan>
-                        <tspan
-                          x={isRight ? (x3 + 12).toFixed(1) : (x3 - 12).toFixed(1)}
-                          dy="9"
-                          fill={slice.color}
-                          className="text-[7.5px] font-black"
-                        >
-                          {`${formatShortCurrency(slice.amount)} (${slice.pct}%)`}
-                        </tspan>
-                      </text>
-                    </g>
-                  ));
-                })()}
-
-                {/* CENTER DARK EMBLEM CORE BADGE (MATCHING USER REFERENCE IMAGE) */}
-                <foreignObject x="100" y="100" width="120" height="120" className="overflow-visible">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 border-4 border-white shadow-2xl flex flex-col items-center justify-center text-white text-center p-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-400 text-slate-900 flex items-center justify-center font-black shadow-md mb-0.5">
-                      {activeChartTab === 'sumber' ? <Coins className="w-4 h-4" /> : activeChartTab === 'bidang' ? <Layers className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                    </div>
-                    <span className="text-[13px] font-black font-headline tracking-tight leading-none mt-0.5">
-                      {formatShortCurrency(activeTotalAmount)}
-                    </span>
-                    <span className="text-[7.5px] font-bold tracking-widest uppercase text-cyan-300 mt-0.5">
-                      {activeChartTab === 'sumber' ? 'TOTAL PAGU' : activeChartTab === 'bidang' ? 'TOTAL BELANJA' : 'TOTAL PRIORITAS'}
-                    </span>
-                  </div>
-                </foreignObject>
+                {/* Donut Center Hole */}
+                <circle cx="100" cy="100" r="52" fill="#ffffff" />
               </svg>
 
+              {/* Center Badge */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none p-2">
+                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-headline leading-none">
+                  {formatShortCurrency(totals.pagu)}
+                </span>
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mt-1">
+                  TOTAL APBDES
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* CARDS BREAKDOWN LEGEND BELOW PIE CHART (3 COMPACT ROWS) */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
-            {activeSlices.map((slice, index) => {
-              const isLastOdd = index === activeSlices.length - 1 && activeSlices.length % 2 !== 0;
-
-              return (
-                <div 
-                  key={slice.num}
-                  className={`p-2 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-between hover:shadow-sm transition-all ${
-                    isLastOdd ? 'col-span-2' : 'col-span-1'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-6 h-6 rounded-md bg-gradient-to-r ${slice.gradient} text-white flex items-center justify-center font-black font-mono text-[10px] shadow-xs shrink-0`}>
-                      {slice.num}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-[11px] font-extrabold text-slate-900 font-headline truncate max-w-[120px] sm:max-w-[160px]" title={slice.label}>
-                        {slice.shortLabel || slice.label}
-                      </h4>
-                      <p className="text-[9px] text-slate-400 font-medium">14 Desa</p>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <span className="text-[11px] font-black text-slate-900 font-headline block">{formatShortCurrency(slice.amount)}</span>
-                    <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">{slice.pct}%</span>
+          {/* CARDS BREAKDOWN LEGEND BELOW PIE CHART */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {activeSlices.map((slice) => (
+              <div
+                key={slice.num}
+                className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-2"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span 
+                    style={{ backgroundColor: slice.color }} 
+                    className="w-7 h-7 rounded-xl text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs"
+                  >
+                    {slice.num}
+                  </span>
+                  <div className="truncate">
+                    <h4 className="text-xs font-bold text-slate-900 truncate">{slice.shortLabel}</h4>
+                    <p className="text-[11px] font-extrabold text-indigo-700">{formatCurrency(slice.amount)}</p>
                   </div>
                 </div>
-              );
-            })}
+
+                <span 
+                  style={{ backgroundColor: `${slice.color}15`, color: slice.color }} 
+                  className="text-xs font-black px-2 py-0.5 rounded-lg shrink-0"
+                >
+                  {slice.pct}%
+                </span>
+              </div>
+            ))}
           </div>
 
         </div>
 
         {/* RIGHT COLUMN: CHART HASIL REALISASI VS TOTAL APBDES PER DESA (5 COLS) */}
-        <div className="lg:col-span-5 bg-slate-50/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-2">
+        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-xl p-5 sm:p-7 space-y-4">
+          
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 font-headline flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                Chart Hasil Realisasi Monev vs Total APBDes
+              <h3 className="text-base font-black text-slate-900 font-headline flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-emerald-600" />
+                Capaian Realisasi Keuangan per Desa
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Nilai Realisasi Monev vs Total Pagu APBDes per Desa</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Peringkat serapan anggaran APBDes 14 Desa.
+              </p>
             </div>
 
-            {/* Sort Toggle */}
-            <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs font-bold shadow-xs">
+            {/* SORT BUTTONS */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button
                 onClick={() => setSelectedSort('pagu')}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${selectedSort === 'pagu' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'}`}
+                className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                  selectedSort === 'pagu' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500'
+                }`}
               >
                 Pagu
               </button>
               <button
                 onClick={() => setSelectedSort('realisasi')}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${selectedSort === 'realisasi' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'}`}
+                className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                  selectedSort === 'realisasi' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500'
+                }`}
               >
-                Realisasi
+                % Serapan
               </button>
             </div>
-          </div>
-
-          {/* TOTAL REALISASI MONEV SUMMARY BADGE BOX */}
-          <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-indigo-600 p-3.5 rounded-2xl text-white shadow-md flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center font-bold shadow-inner">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider block">Total Realisasi Monev Kecamatan</span>
-                <span className="text-base sm:text-lg font-black font-headline tracking-tight">
-                  {formatCurrency(totalMonevSummary.totalRealisasiAmount)}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <span className="text-[10px] font-bold text-emerald-100 uppercase block">Capaian Realisasi</span>
-              <span className="text-sm sm:text-base font-black bg-white text-emerald-800 px-2.5 py-0.5 rounded-lg shadow-xs inline-block">
-                {totalMonevSummary.totalRealisasiPct}%
-              </span>
-            </div>
-          </div>
-
-          {/* Sub Header Legend Indicator */}
-          <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-slate-200 text-[11px] font-bold">
-            <span className="flex items-center gap-1.5 text-indigo-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block" />
-              Total APBDes (100%)
-            </span>
-            <span className="flex items-center gap-1.5 text-emerald-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-              Hasil Realisasi Monev
-            </span>
           </div>
 
           {/* 14 VILLAGES 2-COLUMN GRID (KIRI & KANAN) CHART REALISASI VS TOTAL APBDES */}
@@ -787,7 +708,7 @@ export function VillageFinanceSection() {
                   <div className="w-full bg-indigo-100/70 h-2 rounded-full overflow-hidden border border-indigo-200/70 relative">
                     <motion.div
                       initial={{ width: 0 }}
-                      whileInView={{ width: `${realisasiPct}%` }}
+                      whileInView={{ width: `${Math.min(100, realisasiPct)}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.8, delay: 0.05 + index * 0.02, ease: 'easeOut' }}
                       className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 shadow-xs"
@@ -803,7 +724,7 @@ export function VillageFinanceSection() {
 
       </div>
 
-      {/* EXPANDABLE REKAPITULASI FINANCIAL MATRIX DATA TABLE */}
+      {/* EXPANDABLE REKAPITULASI FINANCIAL MATRIX DATA TABLE (MATCHING USER ADMIN SYSTEM & SCREENSHOT) */}
       <AnimatePresence>
         {showTable && (
           <motion.div
@@ -824,53 +745,53 @@ export function VillageFinanceSection() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
-                <table className="w-full text-xs text-left text-slate-700">
-                  <thead className="bg-gradient-to-r from-indigo-900 via-slate-900 to-purple-950 text-white font-bold uppercase text-[10px] tracking-wider">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-lg bg-white">
+                <table className="w-full text-xs text-left text-slate-700 border-collapse">
+                  <thead className="bg-[#1E1B4B] text-white font-extrabold uppercase text-[10px] tracking-wider text-center">
                     <tr>
-                      <th className="py-3 px-3">No</th>
-                      <th className="py-3 px-3">Desa</th>
-                      <th className="py-3 px-3 text-right">Pagu APBDes</th>
-                      <th className="py-3 px-3 text-right">DDS (Dana Desa)</th>
-                      <th className="py-3 px-3 text-right">ADD (Alokasi Desa)</th>
-                      <th className="py-3 px-3 text-right">Bagi Hasil (PBH)</th>
-                      <th className="py-3 px-3 text-right">PADes</th>
-                      <th className="py-3 px-3 text-right">Keuangan (%)</th>
-                      <th className="py-3 px-3 text-right">Fisik (%)</th>
-                      <th className="py-3 px-3 text-center">Status SPJ</th>
+                      <th className="py-3 px-3 w-10 border-b border-indigo-900">NO</th>
+                      <th className="py-3 px-4 text-left border-b border-indigo-900">DESA</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">PAGU APBDES</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">DDS (DANA DESA)</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">ADD (ALOKASI DESA)</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">BAGI HASIL (PBH)</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">PADES</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">KEUANGAN (%)</th>
+                      <th className="py-3 px-3 text-right border-b border-indigo-900">FISIK (%)</th>
+                      <th className="py-3 px-3 text-center border-b border-indigo-900">STATUS SPJ</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium">
                     {villageList.map((d, index) => (
                       <tr key={d.village} className="hover:bg-indigo-50/60 transition-colors">
-                        <td className="py-2.5 px-3 font-mono font-bold text-slate-400">{index + 1}</td>
-                        <td className="py-2.5 px-3 font-extrabold text-slate-900 font-headline">{d.village}</td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-400 text-center">{index + 1}</td>
+                        <td className="py-2.5 px-4 font-black text-slate-900 font-headline italic uppercase">{d.village}</td>
                         <td className="py-2.5 px-3 text-right font-black text-slate-900">{formatCurrency(d.pagu)}</td>
                         <td className="py-2.5 px-3 text-right font-bold text-indigo-700">{formatCurrency(d.dds)}</td>
                         <td className="py-2.5 px-3 text-right font-bold text-sky-700">{formatCurrency(d.add)}</td>
-                        <td className="py-2.5 px-3 text-right text-amber-700">{formatCurrency(d.pbh)}</td>
-                        <td className="py-2.5 px-3 text-right text-emerald-700">{formatCurrency(d.pades)}</td>
-                        <td className="py-2.5 px-3 text-right font-bold text-emerald-600">{d.realisasiKeuanganPct}%</td>
-                        <td className="py-2.5 px-3 text-right font-bold text-teal-600">{d.realisasiFisikPct}%</td>
+                        <td className="py-2.5 px-3 text-right text-amber-700 font-bold">{formatCurrency(d.pbh)}</td>
+                        <td className="py-2.5 px-3 text-right text-emerald-700 font-bold">{formatCurrency(d.pades)}</td>
+                        <td className="py-2.5 px-3 text-right font-black text-emerald-600">{d.realisasiKeuanganPct}%</td>
+                        <td className="py-2.5 px-3 text-right font-black text-teal-600">{d.realisasiFisikPct}%</td>
                         <td className="py-2.5 px-3 text-center">
-                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${d.statusSpj === 'SPJ Lengkap' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                          <span className={`text-[9px] font-black px-2.5 py-1 rounded-full border ${d.statusSpj === 'SPJ Lengkap' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                             {d.statusSpj}
                           </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
-                    <tr>
-                      <td colSpan={2} className="py-3 px-3 text-left uppercase tracking-wider">Total Kecamatan</td>
+                  <tfoot className="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+                    <tr className="bg-slate-100/90 text-slate-900">
+                      <td colSpan={2} className="py-3 px-4 text-left uppercase tracking-wider font-headline font-black">TOTAL KECAMATAN</td>
                       <td className="py-3 px-3 text-right text-slate-900 font-black">{formatCurrency(totals.pagu)}</td>
-                      <td className="py-3 px-3 text-right text-indigo-800">{formatCurrency(totals.dds)}</td>
-                      <td className="py-3 px-3 text-right text-sky-800">{formatCurrency(totals.add)}</td>
-                      <td className="py-3 px-3 text-right text-amber-800">{formatCurrency(totals.pbh)}</td>
-                      <td className="py-3 px-3 text-right text-emerald-800">{formatCurrency(totals.pades)}</td>
-                      <td className="py-3 px-3 text-right text-emerald-700">{avgRealisasi.keuanganPct}%</td>
-                      <td className="py-3 px-3 text-right text-teal-700">{avgRealisasi.fisikPct}%</td>
-                      <td className="py-3 px-3 text-center text-indigo-800">{avgRealisasi.spjLengkapCount}/14 Lengkap</td>
+                      <td className="py-3 px-3 text-right text-indigo-800 font-black">{formatCurrency(totals.dds)}</td>
+                      <td className="py-3 px-3 text-right text-sky-800 font-black">{formatCurrency(totals.add)}</td>
+                      <td className="py-3 px-3 text-right text-amber-800 font-black">{formatCurrency(totals.pbh)}</td>
+                      <td className="py-3 px-3 text-right text-emerald-800 font-black">{formatCurrency(totals.pades)}</td>
+                      <td className="py-3 px-3 text-right text-emerald-700 font-black">{avgRealisasi.keuanganPct}%</td>
+                      <td className="py-3 px-3 text-right text-teal-700 font-black">{avgRealisasi.fisikPct}%</td>
+                      <td className="py-3 px-3 text-center text-indigo-800 font-black">{avgRealisasi.spjLengkapCount}/14 Lengkap</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -881,5 +802,6 @@ export function VillageFinanceSection() {
       </AnimatePresence>
 
     </motion.div>
+    </section>
   );
 }

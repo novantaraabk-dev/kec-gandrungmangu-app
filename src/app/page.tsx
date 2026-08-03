@@ -396,14 +396,14 @@ export default function Page() {
       {/* PROFIL GEOGRAFI & BATAS WILAYAH KECAMATAN */}
       <DistrictGeographySection />
 
-      {/* ------------------- DEMOGRAFI & DATA KEPENDUDUKAN TERPADU (COMPACT SINGLE ROW LAYOUT) ------------------- */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+      {/* ------------------- DEMOGRAFI & DATA KEPENDUDUKAN TERPADU ------------------- */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-sky-50/70 rounded-3xl border border-blue-200/90 shadow-md my-6">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-slate-200/80 pb-6">
           <div className="space-y-2">
-            <span className="text-xs font-bold tracking-widest text-[#4F46E5] uppercase bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-100 inline-flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-[#4F46E5]" />
+            <span className="text-xs font-black tracking-widest text-white uppercase bg-blue-600 px-3.5 py-1.5 rounded-full border border-blue-400 shadow-xs inline-flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-white" />
               DEMOGRAFI KECAMATAN
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-headline text-slate-900 tracking-tight">
@@ -704,19 +704,17 @@ export default function Page() {
               <span className="font-semibold text-indigo-600">14 Desa Terdaftar ({totalKependudukan.penduduk.total.toLocaleString('id-ID')} Jiwa)</span>
             </div>
           </motion.div>
-
         </div>
-
-        {/* DATA RUMAH IBADAH & KEPERCAYAAN 14 DESA */}
-        <RumahIbadahAgamaSection />
-
-        {/* REKAPITULASI KELEMBAGAAN DESA (RT/RW, PERANGKAT DESA, BPD) */}
-        <PerangkatSummarySection />
-
-        {/* KEUANGAN DESA & REALISASI MONEV APBDES */}
-        <VillageFinanceSection />
-
       </section>
+
+      {/* ------------------- DATA RUMAH IBADAH & KEPERCAYAAN 14 DESA ------------------- */}
+      <RumahIbadahAgamaSection />
+
+      {/* ------------------- REKAPITULASI KELEMBAGAAN DESA ------------------- */}
+      <PerangkatSummarySection />
+
+      {/* ------------------- KEUANGAN DESA & REALISASI MONEV APBDES ------------------- */}
+      <VillageFinanceSection />
 
       {/* NEW ANALYTICS SECTION: JALAN DESA & JALAN KABUPATEN */}
       <RoadAnalyticsSection />
