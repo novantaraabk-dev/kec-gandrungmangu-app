@@ -221,6 +221,7 @@ export interface Monev {
   village: string;
   apbdesDetailId: string;
   year: number;
+  tahap?: 'Tahap I' | 'Tahap II' | 'Tahap III' | string;
   activity: string;
   apbdesCode: string;
   fundingSource: string;

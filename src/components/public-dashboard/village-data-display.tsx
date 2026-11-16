@@ -1,15 +1,14 @@
 'use client';
 import React, { useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Users, Building, MapPin, DollarSign, ListChecks, Heart, HandHelping, Map, University, Landmark } from 'lucide-react';
-import { dataKependudukan, type KependudukanData } from '@/lib/kependudukan-data';
+import { dataKependudukan } from '@/lib/kependudukan-data';
 import { vervalP3keData } from '@/lib/p3ke-verval-data';
-import type { Apbdes, PrioritasDanaDesa, JalanDesa, Perangkat, BpdMember, RtRwMember, Stunting, BumilKek, P3keIntervention, JalanKabupaten, Masjid, Mushola, PasarDesa, Mbg, JumlahBalita, PosyanduKader, PbbP2 } from '@/lib/perangkat-data';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import type { Apbdes, PrioritasDanaDesa, Perangkat, BpdMember, RtRwMember, Stunting, BumilKek, P3keIntervention, JalanKabupaten, Masjid, Mushola, PasarDesa, Mbg, JumlahBalita, PosyanduKader, PbbP2 } from '@/lib/perangkat-data';
+import type { JalanDesa } from '@/lib/jalan-desa-data';
 import { cn } from '@/lib/utils';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 function formatCurrency(value?: number) {

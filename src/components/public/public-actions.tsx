@@ -116,7 +116,7 @@ export function PublicActions() {
               Isi formulir di bawah ini untuk mengunggah dokumen hukum desa Anda.
             </DialogDescription>
           </DialogHeader>
-          <RegulationForm onFinished={() => setIsRegulationDialogOpen(false)} />
+          <RegulationForm onFormSubmit={() => setIsRegulationDialogOpen(false)} />
         </DialogContent>
       </Dialog>
       
@@ -128,7 +128,7 @@ export function PublicActions() {
               Pilih jenis data yang ingin Anda laporkan dan isi formulirnya.
             </DialogDescription>
           </DialogHeader>
-          <HealthDataForm onFinished={() => setIsHealthDialogOpen(false)}/>
+          <HealthDataForm onFormSubmit={() => setIsHealthDialogOpen(false)}/>
         </DialogContent>
       </Dialog>
       

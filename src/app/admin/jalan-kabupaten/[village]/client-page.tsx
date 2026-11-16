@@ -2,8 +2,8 @@
 
 import { useState, useMemo, ChangeEvent } from 'react';
 import * as XLSX from 'xlsx';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -70,7 +70,7 @@ export default function JalanKabupatenClientPage({ village }: { village: string 
     return { totalRuas: jalanList.length, totalPanjang, totalUsulan };
   }, [jalanList]);
 
-  const handleFormSubmit = async (values: any) => {
+  const handleFormSubmit = async (values: Record<string, unknown>) => {
     if (!firestore || !user) return;
     setIsSubmitting(true);
     try {
@@ -90,14 +90,15 @@ export default function JalanKabupatenClientPage({ village }: { village: string 
 
       if (dialogMode === 'edit' && selectedItem) {
         await updateDoc(doc(firestore, "jalanKabupaten", selectedItem.id), payload);
-        toast({ title: 'Sukses', description: `Data untuk ruas ${values.namaRuas} telah diperbarui.` });
+        toast({ title: 'Sukses', description: `Data untuk ruas ${String(values.namaRuas ?? '')} telah diperbarui.` });
       } else {
         await addDoc(collection(firestore, "jalanKabupaten"), { ...payload, createdAt: serverTimestamp(), createdBy: user.uid });
-        toast({ title: 'Sukses', description: `Data untuk ruas ${values.namaRuas} telah ditambahkan.` });
+        toast({ title: 'Sukses', description: `Data untuk ruas ${String(values.namaRuas ?? '')} telah ditambahkan.` });
       }
       setDialogMode(null);
-    } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Gagal Menyimpan', description: e.message });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Terjadi kesalahan';
+      toast({ variant: 'destructive', title: 'Gagal Menyimpan', description: msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -113,7 +114,7 @@ export default function JalanKabupatenClientPage({ village }: { village: string 
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json: any[] = XLSX.utils.sheet_to_json(sheet);
+      const json: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet);
 
       const batch = writeBatch(firestore);
       const collectionRef = collection(firestore, 'jalanKabupaten');
@@ -142,8 +143,9 @@ export default function JalanKabupatenClientPage({ village }: { village: string 
       });
       await batch.commit();
       toast({ title: "Sukses!", description: `${json.length} baris data berhasil diimpor.` });
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Gagal Mengimpor", description: e.message });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Terjadi kesalahan';
+      toast({ variant: "destructive", title: "Gagal Mengimpor", description: msg });
     } finally {
       setIsProcessing(false);
       event.target.value = '';
@@ -161,8 +163,9 @@ export default function JalanKabupatenClientPage({ village }: { village: string 
     try {
       await deleteDoc(doc(firestore, 'jalanKabupaten', itemToDelete.id));
       toast({ title: 'Sukses', description: `Data ruas jalan ${itemToDelete.namaRuas} telah dihapus.` });
-    } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Gagal Menghapus', description: e.message });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Terjadi kesalahan';
+      toast({ variant: 'destructive', title: 'Gagal Menghapus', description: msg });
     } finally {
       setIsSubmitting(false);
       setItemToDelete(null);

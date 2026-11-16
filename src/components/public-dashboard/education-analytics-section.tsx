@@ -6,19 +6,10 @@ import {
   GraduationCap, 
   School, 
   Users, 
-  UserCheck, 
-  BookOpen, 
   Award, 
   PieChart as PieChartIcon, 
   BarChart3, 
   Search, 
-  Sparkles, 
-  Building2,
-  ChevronRight,
-  Filter,
-  CheckCircle2,
-  TrendingUp,
-  Layers,
   FileSpreadsheet,
   ChevronDown
 } from 'lucide-react';
@@ -271,17 +262,17 @@ export function EducationAnalyticsSection() {
 
       {/* CATEGORY TAB SELECTOR (PERMASING-MASING KATEGORI) */}
       <div className="flex items-center gap-1.5 bg-slate-200/90 p-1.5 rounded-2xl border border-slate-300 shadow-inner flex-wrap">
-        {[
+        {([
           { key: 'all', label: '🌐 semua Kategori' },
           { key: 'paud', label: '🧸 TK, KB, TPA, SPS' },
           { key: 'sd', label: '🎒 Kategori SD' },
           { key: 'smp', label: '📘 Kategori SMP' },
           { key: 'smasmk', label: '🎓 Kategori SMA & SMK' },
           { key: 'slbpkbm', label: '🌱 Kategori SLB & PKBM' },
-        ].map((tab) => (
+        ] as const).map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveCategoryTab(tab.key as any)}
+            onClick={() => setActiveCategoryTab(tab.key)}
             className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeCategoryTab === tab.key
                 ? 'bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white shadow-md scale-102'

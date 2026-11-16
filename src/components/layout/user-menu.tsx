@@ -49,11 +49,12 @@ export function UserMenu({ user }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-full">
-          <Avatar className="h-8 w-8">
+        <Button variant="ghost" className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3 py-1.5 h-auto bg-white/65 hover:bg-white/90 border border-white/80 shadow-sm backdrop-blur-sm">
+          <Avatar className="h-8 w-8 ring-2 ring-white">
             <AvatarImage src={avatarImage?.imageUrl} alt={user.name} data-ai-hint={avatarImage?.imageHint} />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="bg-teal-600 text-white font-semibold">{user.name.charAt(0)}</AvatarFallback>
           </Avatar>
+          <span className="hidden sm:inline text-sm font-semibold text-slate-700">{user.name}</span>
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>

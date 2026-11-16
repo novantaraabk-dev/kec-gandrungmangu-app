@@ -159,4 +159,79 @@
   .animate-float-subtle {
     animation: float-subtle 4s ease-in-out infinite;
   }
+
+  /* =========================================================
+     ADMIN MODERN GLASSMORPHISM THEME (Soft Mint -> Lavender)
+     ========================================================= */
+  .admin-theme {
+    --background: 174 36% 94%;
+    --foreground: 215 28% 17%;
+    --card: 180 35% 98%;
+    --card-foreground: 215 28% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 175 76% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 175 30% 92%;
+    --secondary-foreground: 175 76% 24%;
+    --muted: 185 28% 93%;
+    --muted-foreground: 215 16% 45%;
+    --accent: 175 45% 91%;
+    --accent-foreground: 175 76% 24%;
+    --border: 185 28% 86%;
+    --input: 185 28% 86%;
+    --ring: 175 76% 32%;
+    --radius: 0.875rem;
+
+    --sidebar-background: 180 35% 97%;
+    --sidebar-foreground: 215 22% 32%;
+    --sidebar-primary: 175 76% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 175 45% 92%;
+    --sidebar-accent-foreground: 175 76% 26%;
+    --sidebar-border: 180 30% 90%;
+    --sidebar-ring: 175 76% 32%;
+
+    font-family: var(--font-jakarta), var(--font-inter), sans-serif;
+  }
+
+  .admin-theme h1,
+  .admin-theme h2,
+  .admin-theme h3,
+  .admin-theme .font-headline {
+    font-family: var(--font-jakarta), var(--font-poppins), sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .admin-theme .bg-card {
+    border-radius: 1.25rem;
+    background-color: rgba(255, 255, 255, 0.68);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 12px 32px -12px rgba(15, 118, 110, 0.1), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, background-color 0.25s ease;
+  }
+
+  .admin-theme .bg-card:hover {
+    box-shadow: 0 18px 38px -12px rgba(15, 118, 110, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+  }
+
+  .admin-theme table thead th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgb(100 116 139);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  }
+
+  .admin-theme table tbody tr {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    transition: background-color 0.18s ease;
+  }
+
+  .admin-theme table tbody tr:hover {
+    background-color: rgba(20, 184, 166, 0.06);
+  }
 }

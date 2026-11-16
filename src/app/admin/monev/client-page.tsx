@@ -27,9 +27,10 @@ import { villages } from '@/lib/villages';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import type { ApbdesDetail, Monev } from '@/lib/perangkat-data';
-import { ClipboardCheck, Edit, Loader2, Trash2, Printer, Download } from 'lucide-react';
+import { ClipboardCheck, Edit, Loader2, Trash2, Printer, Download, Search, Users, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -49,6 +50,31 @@ function capitalizeFirstLetter(string: string) {
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
+const formatTanggalIndonesia = (dateStr: string) => {
+  if (!dateStr) return '....................';
+  const date = new Date(`${dateStr}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '....................';
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+};
+
+const TAHAP_OPTIONS = ['Tahap I', 'Tahap II', 'Tahap III'] as const;
+type TahapMonev = (typeof TAHAP_OPTIONS)[number];
+
+const TAHAP_ORDER: Record<TahapMonev, number> = {
+  'Tahap I': 1,
+  'Tahap II': 2,
+  'Tahap III': 3,
+};
+
+const normalizeTahap = (tahap?: string): TahapMonev => {
+  if (tahap === 'Tahap II' || tahap === 'Tahap III') return tahap;
+  return 'Tahap I';
+};
+
 const getStatusVariant = (status: string): "default" | "secondary" | "outline" | "destructive" => {
   switch (status) {
     case 'SPJ Lengkap': return 'default';
@@ -64,8 +90,10 @@ export default function MonevClientPage() {
 
   const [selectedVillage, setSelectedVillage] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedTahap, setSelectedTahap] = useState<TahapMonev>('Tahap I');
   const [selectedBidang, setSelectedBidang] = useState<string>('Semua Bidang');
   const [selectedSumberDana, setSelectedSumberDana] = useState<string>('Semua Sumber');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,6 +114,14 @@ export default function MonevClientPage() {
   const [monevToDelete, setMonevToDelete] = useState<Monev | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
+  // Rekap signature & date settings state
+  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
+  const [rekapMonevDate, setRekapMonevDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [kadesName, setKadesName] = useState<string>('');
+  const [timMonevMembers, setTimMonevMembers] = useState<{ name: string; jabatan: string }[]>(
+    Array.from({ length: 3 }, () => ({ name: '', jabatan: '' }))
+  );
+
   const apbdesId = selectedVillage ? `${selectedVillage}-${selectedYear}` : null;
   
   const villageSettingsRef = useMemoFirebase(() => (firestore && selectedVillage) ? doc(firestore, 'villageSettings', selectedVillage) : null, [firestore, selectedVillage]);
@@ -105,8 +141,18 @@ export default function MonevClientPage() {
   
   const monevMap = useMemo(() => {
     if (!monevData) return new Map<string, Monev>();
-    return new Map(monevData.map(m => [m.apbdesDetailId, m]));
-  }, [monevData]);
+    const targetOrder = TAHAP_ORDER[selectedTahap];
+    const map = new Map<string, Monev>();
+    for (const item of monevData) {
+      const itemOrder = TAHAP_ORDER[normalizeTahap(item.tahap)];
+      if (itemOrder > targetOrder) continue;
+      const existing = map.get(item.apbdesDetailId);
+      if (!existing || itemOrder > TAHAP_ORDER[normalizeTahap(existing.tahap)]) {
+        map.set(item.apbdesDetailId, item);
+      }
+    }
+    return map;
+  }, [monevData, selectedTahap]);
 
   const uniqueBidang = useMemo(() => {
     if (!allActivitiesForYear) return [];
@@ -121,12 +167,17 @@ export default function MonevClientPage() {
 
   const filteredActivities = useMemo(() => {
     if (!allActivitiesForYear) return [];
+    const queryText = searchQuery.trim().toLowerCase();
     return allActivitiesForYear.filter(activity => {
         const bidangMatch = selectedBidang === 'Semua Bidang' || activity.category === selectedBidang;
         const sumberDanaMatch = selectedSumberDana === 'Semua Sumber' || activity.fundingSource === selectedSumberDana;
-        return bidangMatch && sumberDanaMatch;
+        const searchMatch =
+          !queryText ||
+          (activity.activityCode ?? '').toLowerCase().includes(queryText) ||
+          (activity.description ?? '').toLowerCase().includes(queryText);
+        return bidangMatch && sumberDanaMatch && searchMatch;
     });
-  }, [allActivitiesForYear, selectedBidang, selectedSumberDana]);
+  }, [allActivitiesForYear, selectedBidang, selectedSumberDana, searchQuery]);
 
   const rekapData = useMemo(() => {
     if (!allActivitiesForYear || !monevMap) return [];
@@ -228,8 +279,9 @@ export default function MonevClientPage() {
         } else {
           try {
               const uploadDate = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+              const tahapSlug = selectedTahap.replace(/\s+/g, '');
               const extension = fotoFile.name.split('.').pop() || 'jpg';
-              const desiredFileName = `MONEV_${selectedVillage}_${uploadDate}_${selectedActivity.id}.${extension}`;
+              const desiredFileName = `MONEV_${selectedVillage}_${tahapSlug}_${uploadDate}_${selectedActivity.id}.${extension}`;
               fotoUrlToSave = await handleFileUpload(fotoFile, folderId, desiredFileName);
           } catch(uploadError: any) {
               toast({ variant: 'destructive', title: 'Gagal Upload Foto', description: uploadError.message });
@@ -237,15 +289,17 @@ export default function MonevClientPage() {
         }
       }
 
-      const monevDocId = currentMonev?.id || doc(collection(firestore, 'monev')).id;
+      const isSameTahap = Boolean(currentMonev?.id && normalizeTahap(currentMonev.tahap) === selectedTahap);
+      const monevDocId = isSameTahap ? currentMonev!.id! : doc(collection(firestore, 'monev')).id;
       const monevRef = doc(firestore, 'monev', monevDocId);
 
       const dataToSave: Monev = {
-        ...(currentMonev as Monev),
+        ...(isSameTahap ? (currentMonev as Monev) : ({} as Monev)),
         id: monevDocId,
         village: selectedVillage,
         apbdesDetailId: selectedActivity.id,
         year: selectedActivity.year,
+        tahap: selectedTahap,
         activity: selectedActivity.description,
         apbdesCode: selectedActivity.activityCode,
         fundingSource: selectedActivity.fundingSource,
@@ -258,7 +312,7 @@ export default function MonevClientPage() {
         fotoUrl: fotoUrlToSave,
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
-        ...(currentMonev ? {} : { createdAt: serverTimestamp(), createdBy: user.uid }),
+        ...(isSameTahap ? {} : { createdAt: serverTimestamp(), createdBy: user.uid }),
       };
 
       await setDoc(monevRef, dataToSave, { merge: true });
@@ -294,66 +348,146 @@ export default function MonevClientPage() {
     }
   };
 
-  const getPrintableHtml = () => {
+  const handleTimMonevChange = (index: number, field: 'name' | 'jabatan', value: string) => {
+    setTimMonevMembers(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleAddTimMonevRow = () => {
+    setTimMonevMembers(prev => [...prev, { name: '', jabatan: '' }]);
+  };
+
+  const handleRemoveTimMonevRow = (index: number) => {
+    setTimMonevMembers(prev => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
+  const getPrintableHtml = (forPdf = false) => {
     const villageTitle = capitalizeFirstLetter(selectedVillage);
+    const formattedMonevDate = formatTanggalIndonesia(rekapMonevDate);
+    const keepCount = Math.min(3, rekapData.length);
+    const splitIndex = Math.max(0, rekapData.length - keepCount);
+    const mainRows = rekapData.slice(0, splitIndex);
+    const trailingRows = rekapData.slice(splitIndex);
+
+    const renderRekapRow = (activity: ApbdesDetail) => {
+      const monevItem = monevMap.get(activity.id);
+      if (!monevItem) return "";
+      const itemTahap = normalizeTahap(monevItem.tahap);
+      const sisaAnggaran = monevItem.budget - monevItem.realization;
+      return `
+        <tr class="data-row">
+          <td class="nowrap">${monevItem.apbdesCode || '-'}</td>
+          <td>${monevItem.activity}</td>
+          <td class="text-right">${formatCurrency(monevItem.budget)}</td>
+          <td class="text-right">${formatCurrency(monevItem.realization)}</td>
+          <td class="text-right">${formatCurrency(sisaAnggaran)}</td>
+          <td class="nowrap">${monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : "-"}</td>
+          <td class="nowrap">${monevItem.tanggalRealisasi || "-"}</td>
+          <td>${monevItem.status} (${itemTahap})</td>
+          <td>${monevItem.notes || "-"}</td>
+        </tr>
+      `;
+    };
+
     return `
       <html>
         <head>
-          <title>Rekapitulasi Monev - Desa ${villageTitle} - ${selectedYear}</title>
+          <title>Rekapitulasi Monev - Desa ${villageTitle} - ${selectedYear} - ${selectedTahap}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
             @page { size: A4 landscape; margin: 1cm; }
-            body { font-family: Arial, sans-serif; font-size: 9pt; color: #333; }
-            .print-container { padding: 0.5rem; }
-            .header { text-align: center; margin-bottom: 1.5rem; }
-            .header h1 { font-size: 14pt; font-weight: bold; margin-bottom: 0.2rem; }
-            .header h3 { font-size: 12pt; font-weight: bold; margin-top: 0; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-            th { font-weight: bold; background-color: #f2f2f2; font-size: 10pt;}
-            td { word-wrap: break-word; }
+            body { font-family: Arial, sans-serif; font-size: 9pt; color: #333; margin: 0; background: #fff; }
+            .print-container { padding: ${forPdf ? '38px' : '0'}; background: #fff; color: #333; font-family: Arial, sans-serif; font-size: 9pt; }
+            .header { text-align: center; margin-bottom: 1.25rem; }
+            .header h1 { font-size: 14pt; font-weight: bold; margin: 0 0 0.25rem 0; }
+            .header h3 { font-size: 11.5pt; font-weight: bold; margin: 0 0 0.25rem 0; }
+            .header .date-subtitle { font-size: 10pt; margin: 0; color: #333; }
+            table.data-table { width: 100%; border-collapse: collapse; }
+            table.data-table thead { display: table-header-group; }
+            table.data-table tr.data-row { break-inside: avoid; page-break-inside: avoid; }
+            table.data-table th, table.data-table td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 9pt; }
+            table.data-table th { font-weight: bold; background-color: #f2f2f2; font-size: 9.5pt; }
+            table.data-table td { word-wrap: break-word; }
+            tbody.keep-with-signature { break-inside: avoid; page-break-inside: avoid; }
+            tr.signature-row > td { border: none !important; padding: 0 !important; background: transparent !important; }
             .nowrap { white-space: nowrap; }
             .text-right { text-align: right; }
+            .signature-section { margin-top: 24px; padding-top: 4px; break-inside: avoid; page-break-inside: avoid; }
+            .signature-date { text-align: center; margin-bottom: 14px; font-size: 10pt; }
+            .signature-columns { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; }
+            .signature-left { width: 62%; }
+            .signature-right { width: 34%; text-align: center; }
+            .signature-title { text-align: center; font-size: 10pt; font-weight: bold; margin-bottom: 12px; }
+            table.tim-table { width: 100%; border-collapse: collapse; }
+            table.tim-table td { border: none !important; padding: 20px 6px 6px 6px !important; font-size: 10pt; vertical-align: bottom; text-align: left; }
+            .tim-no { width: 24px; }
+            .tim-name { width: 36%; }
+            .tim-jabatan { width: 32%; }
+            .tim-sign { width: 28%; letter-spacing: 1px; }
+            .kades-space { height: 85px; }
+            .kades-name { font-weight: bold; font-size: 10pt; }
           </style>
         </head>
         <body>
           <div class="print-container">
             <div class="header">
               <h1>Rekapitulasi Hasil Monitoring dan Evaluasi</h1>
-              <h3>Desa: ${villageTitle} - Tahun Anggaran: ${selectedYear}</h3>
+              <h3>Desa: ${villageTitle} - Tahun Anggaran: ${selectedYear} - ${selectedTahap}</h3>
+              <p class="date-subtitle">Tanggal Monev: ${formattedMonevDate}</p>
             </div>
-            <table>
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Kode Rekening</th>
                   <th>Kegiatan</th>
                   <th class="text-right">Anggaran</th>
                   <th class="text-right">Realisasi</th>
+                  <th class="text-right">Sisa Anggaran</th>
                   <th class="nowrap">Volume</th>
                   <th class="nowrap">Tgl Realisasi</th>
                   <th>Status</th>
                   <th>Catatan</th>
                 </tr>
               </thead>
-              <tbody>
-                ${rekapData
-                  .map((activity) => {
-                    const monevItem = monevMap.get(activity.id);
-                    if (!monevItem) return "";
-                    return `
-                      <tr>
-                        <td class="nowrap">${monevItem.apbdesCode || '-'}</td>
-                        <td>${monevItem.activity}</td>
-                        <td class="text-right">${formatCurrency(monevItem.budget)}</td>
-                        <td class="text-right">${formatCurrency(monevItem.realization)}</td>
-                        <td class="nowrap">${monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : "-"}</td>
-                        <td class="nowrap">${monevItem.tanggalRealisasi || "-"}</td>
-                        <td>${monevItem.status}</td>
-                        <td>${monevItem.notes || "-"}</td>
-                      </tr>
-                    `;
-                  })
-                  .join("")}
+              ${mainRows.length > 0 ? `<tbody>${mainRows.map(renderRekapRow).join("")}</tbody>` : ""}
+              <tbody class="keep-with-signature">
+                ${trailingRows.map(renderRekapRow).join("")}
+                <tr class="signature-row">
+                  <td colspan="9">
+                    <div class="signature-section">
+                      <div class="signature-date">Gandrungmangu, ${formattedMonevDate}</div>
+                      <div class="signature-columns">
+                        <div class="signature-left">
+                          <div class="signature-title">Tim Monev</div>
+                          <table class="tim-table">
+                            <tbody>
+                              ${timMonevMembers.map((member, i) => {
+                                const memberName = member.name.trim() || '';
+                                const memberJabatan = member.jabatan.trim() || '';
+                                return `
+                                  <tr>
+                                    <td class="tim-no">${i + 1}.</td>
+                                    <td class="tim-name">${memberName}</td>
+                                    <td class="tim-jabatan">${memberJabatan}</td>
+                                    <td class="tim-sign">.....................</td>
+                                  </tr>
+                                `;
+                              }).join('')}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="signature-right">
+                          <div class="signature-title">Kepala Desa ${villageTitle}</div>
+                          <div class="kades-space"></div>
+                          <div class="kades-name">${kadesName.trim() || '.....................'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -364,7 +498,7 @@ export default function MonevClientPage() {
 
   const handlePrint = () => {
     if (!rekapData || rekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
-    const printContent = getPrintableHtml();
+    const printContent = getPrintableHtml(false);
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.open();
@@ -383,27 +517,103 @@ export default function MonevClientPage() {
     if (!rekapData || rekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
   
     const villageTitle = capitalizeFirstLetter(selectedVillage);
-    const fileName = `Rekap-Monev-${villageTitle}-${selectedYear}.pdf`;
+    const tahapSlug = selectedTahap.replace(/\s+/g, '-');
+    const fileName = `Rekap-Monev-${villageTitle}-${selectedYear}-${tahapSlug}.pdf`;
   
     const reportElement = document.createElement('div');
     reportElement.style.position = 'absolute';
     reportElement.style.left = '-9999px';
     reportElement.style.width = '1123px';
+    reportElement.style.backgroundColor = '#ffffff';
   
-    reportElement.innerHTML = getPrintableHtml();
+    reportElement.innerHTML = getPrintableHtml(true);
     document.body.appendChild(reportElement);
   
     try {
-      const canvas = await html2canvas(reportElement, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
+      const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
       const pdf = new jsPDF({
         orientation: 'landscape',
-        unit: 'px',
+        unit: 'mm',
         format: 'a4',
       });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const domWidth = reportElement.offsetWidth;
+      const domHeight = reportElement.scrollHeight;
+      const pageHeightDom = domWidth * (pdfHeight / pdfWidth);
+      const scaleFactor = canvas.width / domWidth;
+
+      if (domHeight <= pageHeightDom) {
+        const imgData = canvas.toDataURL('image/png');
+        const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightMm);
+      } else {
+        const containerTop = reportElement.getBoundingClientRect().top;
+        const mainRowElements = Array.from(reportElement.querySelectorAll('tbody:not(.keep-with-signature) tr.data-row'));
+        const keepBlock = reportElement.querySelector('tbody.keep-with-signature');
+        const keepTop = keepBlock ? keepBlock.getBoundingClientRect().top - containerTop : domHeight;
+
+        const breakPoints: number[] = [0];
+        let currentStart = 0;
+
+        while (currentStart + pageHeightDom < domHeight) {
+          const maxBottom = currentStart + pageHeightDom - 38;
+          let candidateBreak = currentStart;
+
+          if (keepTop > currentStart && keepTop <= maxBottom && domHeight > currentStart + pageHeightDom) {
+            // Keep trailing rows + signature together on the next page
+            candidateBreak = keepTop;
+          } else {
+            for (const row of mainRowElements) {
+              const rowBottom = row.getBoundingClientRect().bottom - containerTop;
+              if (rowBottom > currentStart && rowBottom <= maxBottom) {
+                candidateBreak = rowBottom;
+              }
+            }
+          }
+
+          if (candidateBreak <= currentStart) {
+            candidateBreak = Math.min(currentStart + pageHeightDom - 38, domHeight);
+          }
+
+          breakPoints.push(candidateBreak);
+          currentStart = candidateBreak;
+        }
+        breakPoints.push(domHeight);
+
+        for (let i = 0; i < breakPoints.length - 1; i++) {
+          const startY = breakPoints[i];
+          const endY = breakPoints[i + 1];
+          const chunkHeightDom = endY - startY;
+          if (chunkHeightDom <= 0) continue;
+
+          if (i > 0) pdf.addPage();
+
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = Math.ceil(chunkHeightDom * scaleFactor);
+          const ctx = pageCanvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            ctx.drawImage(
+              canvas,
+              0,
+              Math.floor(startY * scaleFactor),
+              canvas.width,
+              pageCanvas.height,
+              0,
+              0,
+              canvas.width,
+              pageCanvas.height
+            );
+            const yOffsetMm = i === 0 ? 0 : 10;
+            const chunkHeightMm = (chunkHeightDom * pdfWidth) / domWidth;
+            pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, yOffsetMm, pdfWidth, chunkHeightMm);
+          }
+        }
+      }
+
       pdf.save(fileName);
     } catch (err) {
       console.error("Error generating PDF:", err);
@@ -418,7 +628,7 @@ export default function MonevClientPage() {
     return `
       <html>
         <head>
-          <title>Daftar Kegiatan APBDes - Desa ${villageTitle} - ${selectedYear}</title>
+          <title>Daftar Kegiatan APBDes - Desa ${villageTitle} - ${selectedYear} - ${selectedTahap}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap');
             @page { size: A4 landscape; margin: 1cm; }
@@ -439,7 +649,7 @@ export default function MonevClientPage() {
           <div class="print-container">
             <div class="header">
               <h1>Daftar Kegiatan APBDes</h1>
-              <h3>Desa: ${villageTitle} - Tahun Anggaran: ${selectedYear}</h3>
+              <h3>Desa: ${villageTitle} - Tahun Anggaran: ${selectedYear} - ${selectedTahap}</h3>
             </div>
             <table>
               <thead>
@@ -449,6 +659,7 @@ export default function MonevClientPage() {
                   <th class="text-right">Anggaran</th>
                   <th>Sumber Dana</th>
                   <th class="text-right">Realisasi</th>
+                  <th class="text-right">Sisa Anggaran</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -463,7 +674,8 @@ export default function MonevClientPage() {
                         <td class="text-right">${formatCurrency(activity.amount)}</td>
                         <td>${activity.fundingSource || '-'}</td>
                         <td class="text-right">${monevItem ? formatCurrency(monevItem.realization) : '-'}</td>
-                        <td>${monevItem ? monevItem.status : 'Belum dievaluasi'}</td>
+                        <td class="text-right">${monevItem ? formatCurrency(activity.amount - monevItem.realization) : '-'}</td>
+                        <td>${monevItem ? `${monevItem.status} (${normalizeTahap(monevItem.tahap)})` : 'Belum dievaluasi'}</td>
                       </tr>
                     `;
                   })
@@ -501,13 +713,22 @@ export default function MonevClientPage() {
           <p className="text-muted-foreground">Pilih desa dan tahun untuk melihat kegiatan dan menginput hasil monitoring & evaluasi.</p>
         </div>
 
-        <Card>
+        <Tabs defaultValue="kegiatan" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="kegiatan">Daftar Kegiatan APBDes</TabsTrigger>
+            <TabsTrigger value="rekap">
+              Rekap Hasil Monev{rekapData.length > 0 ? ` (${rekapData.length})` : ''}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kegiatan">
+            <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <ClipboardCheck className="h-6 w-6" />
                 <span>Daftar Kegiatan APBDes</span>
             </CardTitle>
-            <CardDescription>Filter berdasarkan desa, tahun, bidang, dan sumber dana untuk memulai.</CardDescription>
+            <CardDescription>Filter berdasarkan desa, tahun, tahap, bidang, sumber dana, kode kegiatan, dan kegiatan.</CardDescription>
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <Select value={selectedVillage} onValueChange={setSelectedVillage}>
                 <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Pilih Desa..." /></SelectTrigger>
@@ -517,6 +738,12 @@ export default function MonevClientPage() {
                 <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Tahun..." /></SelectTrigger>
                 <SelectContent>{[new Date().getFullYear(), new Date().getFullYear()-1].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
               </Select>
+              <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
+                <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
+                <SelectContent>
+                  {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={selectedBidang} onValueChange={setSelectedBidang} disabled={!selectedVillage}>
                 <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Pilih Bidang..." /></SelectTrigger>
                 <SelectContent>{uniqueBidang.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
@@ -525,6 +752,16 @@ export default function MonevClientPage() {
                 <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Pilih Sumber Dana..." /></SelectTrigger>
                 <SelectContent>{uniqueSumberDana.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select>
+              <div className="relative w-full sm:w-[280px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari Kode Kegiatan atau Kegiatan..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  disabled={!selectedVillage}
+                  className="pl-9"
+                />
+              </div>
               <Button variant="outline" onClick={handlePrintActivities} disabled={!filteredActivities || filteredActivities.length === 0}>
                 <Printer className="mr-2 h-4 w-4" /> Cetak Daftar
               </Button>
@@ -541,14 +778,15 @@ export default function MonevClientPage() {
                     <TableHead>Anggaran</TableHead>
                     <TableHead>Sumber Dana</TableHead>
                     <TableHead>Realisasi</TableHead>
+                    <TableHead>Sisa Anggaran</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {(isLoadingActivities || isLoadingMonev) && selectedVillage ? (
-                    <TableRow><TableCell colSpan={7} className="text-center h-24"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center h-24"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></TableCell></TableRow>
                   ) : !selectedVillage ? (
-                     <TableRow><TableCell colSpan={7} className="text-center h-24">Silakan pilih desa untuk menampilkan data.</TableCell></TableRow>
+                     <TableRow><TableCell colSpan={8} className="text-center h-24">Silakan pilih desa untuk menampilkan data.</TableCell></TableRow>
                   ) : filteredActivities.length > 0 ? (
                     filteredActivities.map((item) => {
                       const monevItem = monevMap.get(item.id);
@@ -564,9 +802,13 @@ export default function MonevClientPage() {
                           <TableCell>{formatCurrency(item.amount)}</TableCell>
                           <TableCell>{item.fundingSource}</TableCell>
                           <TableCell className={monevItem ? 'font-semibold' : 'text-muted-foreground'}>{monevItem ? formatCurrency(monevItem.realization) : '-'}</TableCell>
+                          <TableCell className={monevItem ? 'font-medium' : 'text-muted-foreground'}>{monevItem ? formatCurrency(item.amount - monevItem.realization) : '-'}</TableCell>
                           <TableCell>
                             {monevItem ? (
-                              <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
+                                <Badge variant="outline" className="text-xs">{normalizeTahap(monevItem.tahap)}</Badge>
+                              </div>
                             ) : (
                               <Badge variant="outline">Belum dievaluasi</Badge>
                             )}
@@ -575,28 +817,39 @@ export default function MonevClientPage() {
                       );
                     })
                   ) : (
-                     <TableRow><TableCell colSpan={7} className="text-center h-24">Tidak ada data kegiatan APBDes untuk filter yang dipilih.</TableCell></TableRow>
+                     <TableRow><TableCell colSpan={8} className="text-center h-24">Tidak ada data kegiatan APBDes untuk filter yang dipilih.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
 
-        {rekapData.length > 0 && (
+          <TabsContent value="rekap">
             <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <CardTitle>Rekap Hasil Monev</CardTitle>
-                        <CardDescription>Daftar kegiatan yang telah dievaluasi untuk Desa terpilih.</CardDescription>
+                        <CardDescription>Daftar kegiatan yang telah dievaluasi untuk Desa terpilih ({selectedTahap}).</CardDescription>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" onClick={handlePrint}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
+                          <SelectTrigger className="w-[135px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
+                          <SelectContent>
+                            {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="outline" onClick={() => setIsSignatureDialogOpen(true)} disabled={!selectedVillage}>
+                            <Users className="mr-2 h-4 w-4" />
+                            Tim Monev &amp; Kades
+                        </Button>
+                        <Button variant="outline" onClick={handlePrint} disabled={rekapData.length === 0}>
                             <Printer className="mr-2 h-4 w-4" />
                             Cetak
                         </Button>
-                        <Button onClick={handleDownloadPdf}>
+                        <Button onClick={handleDownloadPdf} disabled={rekapData.length === 0}>
                             <Download className="mr-2 h-4 w-4" />
                             Unduh PDF
                         </Button>
@@ -612,6 +865,7 @@ export default function MonevClientPage() {
                                     <TableHead>Kegiatan</TableHead>
                                     <TableHead>Anggaran</TableHead>
                                     <TableHead>Realisasi</TableHead>
+                                    <TableHead>Sisa Anggaran</TableHead>
                                     <TableHead>Volume</TableHead>
                                     <TableHead>Tgl Realisasi</TableHead>
                                     <TableHead>Status</TableHead>
@@ -619,7 +873,16 @@ export default function MonevClientPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {rekapData.map(activity => {
+                                {!selectedVillage ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center h-24">Silakan pilih desa pada tab Daftar Kegiatan APBDes untuk menampilkan data.</TableCell>
+                                    </TableRow>
+                                ) : rekapData.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center h-24">Belum ada kegiatan yang dievaluasi untuk desa dan tahun terpilih.</TableCell>
+                                    </TableRow>
+                                ) : (
+                                  rekapData.map(activity => {
                                     const monevItem = monevMap.get(activity.id);
                                     if (!monevItem) return null;
                                     return (
@@ -632,10 +895,14 @@ export default function MonevClientPage() {
                                             <TableCell className="font-medium">{activity.description}</TableCell>
                                             <TableCell>{formatCurrency(activity.amount)}</TableCell>
                                             <TableCell className="font-semibold">{formatCurrency(monevItem.realization)}</TableCell>
+                                            <TableCell className="font-medium">{formatCurrency(activity.amount - monevItem.realization)}</TableCell>
                                             <TableCell>{monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : '-'}</TableCell>
                                             <TableCell>{monevItem.tanggalRealisasi || '-'}</TableCell>
                                             <TableCell>
-                                                <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                  <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
+                                                  <Badge variant="outline" className="text-xs">{normalizeTahap(monevItem.tahap)}</Badge>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 {monevItem.fotoUrl ? (
@@ -644,22 +911,24 @@ export default function MonevClientPage() {
                                             </TableCell>
                                         </TableRow>
                                     )
-                                })}
+                                  })
+                                )}
                             </TableBody>
                         </Table>
                     </div>
                 </CardContent>
             </Card>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-xl">
               <DialogHeader>
-                  <DialogTitle>Input Hasil Monev</DialogTitle>
+                  <DialogTitle>Input Hasil Monev ({selectedTahap})</DialogTitle>
                   <DialogDescription>
                       <span className="font-semibold block">{selectedActivity?.description}</span>
-                      <span className="block">Anggaran: {formatCurrency(selectedActivity?.amount || 0)}</span>
+                      <span className="block">Anggaran: {formatCurrency(selectedActivity?.amount || 0)} &bull; {selectedTahap}</span>
                   </DialogDescription>
               </DialogHeader>
               <ScrollArea className="h-[60vh] pr-6">
@@ -741,6 +1010,83 @@ export default function MonevClientPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isSignatureDialogOpen} onOpenChange={setIsSignatureDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Pengaturan Penandatanganan Rekap Monev</DialogTitle>
+            <DialogDescription>
+              Isi tanggal monev, nama Kepala Desa, serta nama dan jabatan anggota Tim Monev untuk dicetak pada Rekap Hasil Monev.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="grid gap-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="rekapMonevDate">Tanggal Monev</Label>
+                <Input
+                  id="rekapMonevDate"
+                  type="date"
+                  value={rekapMonevDate}
+                  onChange={(e) => setRekapMonevDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="kadesName">Nama Kepala Desa {selectedVillage ? capitalizeFirstLetter(selectedVillage) : ''}</Label>
+                <Input
+                  id="kadesName"
+                  placeholder="Contoh: Salimun"
+                  value={kadesName}
+                  onChange={(e) => setKadesName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Tim Monev</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={handleAddTimMonevRow}>
+                    <Plus className="mr-1 h-4 w-4" />
+                    Tambah Baris
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {timMonevMembers.map((member, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="w-6 text-sm font-medium text-muted-foreground">{index + 1}.</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
+                        <Input
+                          placeholder={`Nama Anggota ${index + 1}`}
+                          value={member.name}
+                          onChange={(e) => handleTimMonevChange(index, 'name', e.target.value)}
+                        />
+                        <Input
+                          placeholder={`Jabatan Anggota ${index + 1}`}
+                          value={member.jabatan}
+                          onChange={(e) => handleTimMonevChange(index, 'jabatan', e.target.value)}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveTimMonevRow(index)}
+                        disabled={timMonevMembers.length <= 1}
+                        title="Hapus baris"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4 border-t">
+            <Button type="button" onClick={() => setIsSignatureDialogOpen(false)}>
+              Simpan &amp; Tutup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

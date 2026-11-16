@@ -38,6 +38,26 @@ interface SidebarNavProps {
   onLinkClick?: () => void;
 }
 
+interface BaseNavItem {
+  label: string;
+  icon: React.ElementType;
+  roles: User['role'][];
+}
+
+interface LinkNavItem extends BaseNavItem {
+  href: string;
+  basePath?: never;
+  subItems?: never;
+}
+
+interface AccordionNavItem extends BaseNavItem {
+  basePath: string;
+  subItems: { label: string; href: string }[];
+  href?: never;
+}
+
+type NavItem = LinkNavItem | AccordionNavItem;
+
 const NavLink = ({
   href,
   label,
@@ -55,12 +75,19 @@ const NavLink = ({
     href={href}
     onClick={onLinkClick}
     className={cn(
-      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-      isActive && 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+      'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200',
+      isActive
+        ? 'bg-gradient-to-r from-[#198f96] to-[#0f6b74] text-white font-semibold shadow-md shadow-teal-700/20'
+        : 'text-slate-600 hover:bg-white/70 hover:text-teal-800 hover:translate-x-0.5'
     )}
   >
-    <Icon className="h-5 w-5" />
-    {label}
+    <Icon
+      className={cn(
+        'h-[18px] w-[18px] transition-colors duration-200',
+        isActive ? 'text-white' : 'text-teal-700/75 group-hover:text-teal-700'
+      )}
+    />
+    <span className="truncate">{label}</span>
   </Link>
 );
 
@@ -69,7 +96,7 @@ const NavAccordion = ({
   pathname,
   onLinkClick,
 }: {
-  item: any;
+  item: AccordionNavItem;
   pathname: string;
   onLinkClick?: () => void;
 }) => (
@@ -86,28 +113,28 @@ const NavAccordion = ({
     <AccordionItem value={item.label} className="border-none">
       <AccordionTrigger
         className={cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:no-underline [&[data-state=open]]:bg-sidebar-accent',
+          'group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-teal-800 hover:no-underline [&[data-state=open]]:bg-white/60 [&[data-state=open]]:text-teal-800',
           item.basePath &&
             pathname.startsWith(item.basePath) &&
-            'text-sidebar-accent-foreground font-semibold'
+            'bg-gradient-to-r from-[#198f96]/15 to-[#0f6b74]/10 text-teal-800 font-semibold'
         )}
       >
         <div className="flex items-center gap-3">
-          <item.icon className="h-5 w-5" />
+          <item.icon className="h-[18px] w-[18px] text-teal-700/80" />
           <span>{item.label}</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="pl-8 pt-1">
-        <div className="flex flex-col gap-1">
-          {item.subItems.map((subItem: any) => (
+        <div className="flex flex-col gap-1 border-l border-teal-200/70 pl-2">
+          {item.subItems.map((subItem) => (
             <Link
               key={subItem.href}
               href={subItem.href}
               onClick={onLinkClick}
               className={cn(
-                'block rounded-md px-3 py-1.5 text-sm text-sidebar-foreground/80 transition-all hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground',
+                'block rounded-lg px-3 py-1.5 text-sm text-slate-600 transition-all duration-200 hover:bg-white/70 hover:text-teal-800',
                 pathname === subItem.href &&
-                  'bg-sidebar-accent text-sidebar-accent-foreground'
+                  'bg-gradient-to-r from-[#198f96] to-[#0f6b74] text-white font-semibold shadow-sm shadow-teal-700/20'
               )}
             >
               {subItem.label}
@@ -129,7 +156,7 @@ const NavCategory = ({ title }: { title: string }) => (
 export function SidebarNav({ role, onLinkClick }: SidebarNavProps) {
   const pathname = usePathname();
 
-  const navConfig = {
+  const navConfig: Record<string, NavItem[]> = {
     'BERANDA': [
         { href: '/admin/dashboard', label: 'Dashboard Admin', icon: LayoutDashboard, roles: ['admin', 'operator'] },
     ],

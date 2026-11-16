@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, type ChangeEvent, useEffect } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Loader2, AlertCircle, Save, UserCheck, Shield } from 'lucide-react';
+import { Upload, Loader2, AlertCircle, Save, UserCheck } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -13,6 +13,14 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAppSettings } from '@/lib/app-settings';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
+
+interface GlobalSettingsData {
+  arsipDriveFolderIds?: Record<string, string>;
+  profileVideoUrl?: string;
+  camatName?: string;
+  camatTitle?: string;
+  kecamatanMaksudTujuan?: string;
+}
 
 const docCategories = ["PM", "TAPEM", "TRANTIBUM", "KESRA", "UMUM & PELAYANAN", "PKA"];
 
@@ -46,42 +54,33 @@ export default function SettingsClientPage() {
   const [camatPreview, setCamatPreview] = useState<string | null>(null);
   const [isCamatUploading, setIsCamatUploading] = useState(false);
 
-  const [camatName, setCamatName] = useState<string>('Fathan Ady Chandra, S.STP., M.M.');
-  const [camatTitle, setCamatTitle] = useState<string>('Camat Gandrungmangu');
-  const [maksudTujuan, setMaksudTujuan] = useState<string>('');
+  const [camatNameDraft, setCamatNameDraft] = useState<string | null>(null);
+  const [camatTitleDraft, setCamatTitleDraft] = useState<string | null>(null);
+  const [maksudTujuanDraft, setMaksudTujuanDraft] = useState<string | null>(null);
   const [isCamatSaving, setIsCamatSaving] = useState(false);
 
-  const [arsipFolderIds, setArsipFolderIds] = useState<Record<string, string>>({});
+  const [arsipFolderIdsDraft, setArsipFolderIdsDraft] = useState<Record<string, string> | null>(null);
   const [isArsipSaving, setIsArsipSaving] = useState(false);
 
-  const [youtubeUrl, setYoutubeUrl] = useState<string>('');
+  const [youtubeUrlDraft, setYoutubeUrlDraft] = useState<string | null>(null);
   const [isVideoSaving, setIsVideoSaving] = useState(false);
   const { profileVideoUrl: currentProfileVideoUrl } = useAppSettings();
 
-  const isConfigured = cloudinaryCloudName !== 'YOUR_CLOUD_NAME';
+  const isConfigured = (cloudinaryCloudName as string) !== 'YOUR_CLOUD_NAME';
   
   const settingsDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
-  const { data: globalSettings } = useDoc<any>(settingsDoc);
+  const { data: globalSettings } = useDoc<GlobalSettingsData>(settingsDoc);
 
-  useEffect(() => {
-    if (globalSettings?.arsipDriveFolderIds) {
-      setArsipFolderIds(globalSettings.arsipDriveFolderIds);
-    }
-    if (globalSettings?.profileVideoUrl) {
-      setYoutubeUrl(globalSettings.profileVideoUrl);
-    } else if (currentProfileVideoUrl) {
-      setYoutubeUrl(currentProfileVideoUrl);
-    }
+  const camatName = camatNameDraft ?? globalSettings?.camatName ?? appCamatName ?? 'Fathan Ady Chandra, S.STP., M.M.';
+  const camatTitle = camatTitleDraft ?? globalSettings?.camatTitle ?? appCamatTitle ?? 'Camat Gandrungmangu';
+  const maksudTujuan = maksudTujuanDraft ?? globalSettings?.kecamatanMaksudTujuan ?? appMaksudTujuan ?? '';
+  const arsipFolderIds = arsipFolderIdsDraft ?? globalSettings?.arsipDriveFolderIds ?? {};
+  const youtubeUrl = youtubeUrlDraft ?? globalSettings?.profileVideoUrl ?? currentProfileVideoUrl ?? '';
 
-    if (globalSettings?.camatName) setCamatName(globalSettings.camatName);
-    else if (appCamatName) setCamatName(appCamatName);
-
-    if (globalSettings?.camatTitle) setCamatTitle(globalSettings.camatTitle);
-    else if (appCamatTitle) setCamatTitle(appCamatTitle);
-
-    if (globalSettings?.kecamatanMaksudTujuan) setMaksudTujuan(globalSettings.kecamatanMaksudTujuan);
-    else if (appMaksudTujuan) setMaksudTujuan(appMaksudTujuan);
-  }, [globalSettings, currentProfileVideoUrl, appCamatName, appCamatTitle, appMaksudTujuan]);
+  const setCamatName = (value: string) => setCamatNameDraft(value);
+  const setCamatTitle = (value: string) => setCamatTitleDraft(value);
+  const setMaksudTujuan = (value: string) => setMaksudTujuanDraft(value);
+  const setYoutubeUrl = (value: string) => setYoutubeUrlDraft(value);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void, setPreview: (url: string | null) => void) => {
     const file = e.target.files?.[0];
@@ -139,7 +138,7 @@ export default function SettingsClientPage() {
       const downloadURL = data.secure_url;
 
       const settingsDocRef = doc(firestore, 'settings', 'global');
-      const dataToUpdate: Record<string, any> = {
+      const dataToUpdate: Record<string, unknown> = {
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
       };
@@ -166,12 +165,13 @@ export default function SettingsClientPage() {
         description: `${descriptionText} telah berhasil diperbarui via Cloudinary.`,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Proses unggah Cloudinary gagal:", error);
+      const msg = error instanceof Error ? error.message : "Terjadi galat yang tidak diketahui saat mengunggah.";
       toast({
         variant: "destructive",
         title: "Upload Gagal",
-        description: error.message || "Terjadi galat yang tidak diketahui saat mengunggah.",
+        description: msg,
         duration: 9000
       });
     } finally {
@@ -198,11 +198,12 @@ export default function SettingsClientPage() {
         title: "Sukses",
         description: "Profil Camat dan Redaksi Maksud Tujuan berhasil diperbarui.",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan data profil Camat.";
       toast({
         variant: "destructive",
         title: "Gagal Menyimpan",
-        description: err.message || "Terjadi kesalahan saat menyimpan data profil Camat.",
+        description: msg,
       });
     } finally {
       setIsCamatSaving(false);
@@ -210,8 +211,8 @@ export default function SettingsClientPage() {
   };
 
   const handleArsipFolderIdChange = (category: string, value: string) => {
-    setArsipFolderIds(prev => ({
-      ...prev,
+    setArsipFolderIdsDraft(prev => ({
+      ...(prev ?? globalSettings?.arsipDriveFolderIds ?? {}),
       [category]: value,
     }));
   };
@@ -227,7 +228,7 @@ export default function SettingsClientPage() {
         updatedBy: user.uid,
       }, { merge: true });
       toast({ title: 'Sukses', description: 'ID Folder Google Drive untuk Arsip berhasil diperbarui.' });
-    } catch (error: any) {
+    } catch {
       toast({ variant: 'destructive', title: 'Gagal', description: 'Gagal menyimpan ID Folder Arsip.' });
     } finally {
       setIsArsipSaving(false);
@@ -245,7 +246,7 @@ export default function SettingsClientPage() {
         updatedBy: user.uid,
       }, { merge: true });
       toast({ title: 'Sukses', description: 'URL Video Profil berhasil diperbarui.' });
-    } catch (error: any) {
+    } catch {
       toast({ variant: 'destructive', title: 'Gagal', description: 'Gagal menyimpan URL Video Profil.' });
     } finally {
       setIsVideoSaving(false);
