@@ -283,8 +283,9 @@ export default function MonevClientPage() {
               const extension = fotoFile.name.split('.').pop() || 'jpg';
               const desiredFileName = `MONEV_${selectedVillage}_${tahapSlug}_${uploadDate}_${selectedActivity.id}.${extension}`;
               fotoUrlToSave = await handleFileUpload(fotoFile, folderId, desiredFileName);
-          } catch(uploadError: any) {
-              toast({ variant: 'destructive', title: 'Gagal Upload Foto', description: uploadError.message });
+          } catch (uploadError: unknown) {
+              const msg = uploadError instanceof Error ? uploadError.message : 'Terjadi kesalahan saat mengunggah foto.';
+              toast({ variant: 'destructive', title: 'Gagal Upload Foto', description: msg });
           }
         }
       }
@@ -319,9 +320,10 @@ export default function MonevClientPage() {
 
       toast({ title: 'Sukses!', description: 'Data Monev berhasil disimpan.' });
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Gagal Menyimpan', description: 'Terjadi kesalahan: ' + error.message });
+      const msg = error instanceof Error ? error.message : 'Terjadi kesalahan';
+      toast({ variant: 'destructive', title: 'Gagal Menyimpan', description: 'Terjadi kesalahan: ' + msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -338,8 +340,9 @@ export default function MonevClientPage() {
     try {
       await deleteDoc(doc(firestore, 'monev', monevToDelete.id));
       toast({ title: 'Sukses', description: 'Data Monev telah dihapus.' });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Gagal Menghapus', description: error.message });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Terjadi kesalahan';
+      toast({ variant: 'destructive', title: 'Gagal Menghapus', description: msg });
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -768,18 +771,18 @@ export default function MonevClientPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="overflow-x-auto lg:overflow-x-visible">
+              <Table className="w-full lg:table-fixed text-xs">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Aksi</TableHead>
-                    <TableHead>Kode Kegiatan</TableHead>
-                    <TableHead>Kegiatan</TableHead>
-                    <TableHead>Anggaran</TableHead>
-                    <TableHead>Sumber Dana</TableHead>
-                    <TableHead>Realisasi</TableHead>
-                    <TableHead>Sisa Anggaran</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Aksi</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[105px]">Kode</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[24%]">Kegiatan</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Anggaran</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Sumber</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Realisasi</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Sisa Anggaran</TableHead>
+                    <TableHead className="px-2 py-2.5 lg:w-[130px]">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -792,25 +795,25 @@ export default function MonevClientPage() {
                       const monevItem = monevMap.get(item.id);
                       return (
                         <TableRow key={item.id}>
-                          <TableCell>
-                            <Button variant="outline" size="sm" onClick={() => handleEditClick(item)}>
-                                <Edit className="mr-2 h-4 w-4" /> Input/Edit
+                          <TableCell className="px-2 py-2">
+                            <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]" onClick={() => handleEditClick(item)}>
+                                <Edit className="mr-1 h-3 w-3" /> Input/Edit
                             </Button>
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{item.activityCode}</TableCell>
-                          <TableCell className="font-medium">{item.description}</TableCell>
-                          <TableCell>{formatCurrency(item.amount)}</TableCell>
-                          <TableCell>{item.fundingSource}</TableCell>
-                          <TableCell className={monevItem ? 'font-semibold' : 'text-muted-foreground'}>{monevItem ? formatCurrency(monevItem.realization) : '-'}</TableCell>
-                          <TableCell className={monevItem ? 'font-medium' : 'text-muted-foreground'}>{monevItem ? formatCurrency(item.amount - monevItem.realization) : '-'}</TableCell>
-                          <TableCell>
+                          <TableCell className="px-2 py-2 font-mono text-[11px] break-all">{item.activityCode}</TableCell>
+                          <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{item.description}</TableCell>
+                          <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(item.amount)}</TableCell>
+                          <TableCell className="px-2 py-2 whitespace-normal break-words">{item.fundingSource}</TableCell>
+                          <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-semibold' : 'text-muted-foreground')}>{monevItem ? formatCurrency(monevItem.realization) : '-'}</TableCell>
+                          <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-medium' : 'text-muted-foreground')}>{monevItem ? formatCurrency(item.amount - monevItem.realization) : '-'}</TableCell>
+                          <TableCell className="px-2 py-2">
                             {monevItem ? (
-                              <div className="flex flex-wrap items-center gap-1.5">
-                                <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
-                                <Badge variant="outline" className="text-xs">{normalizeTahap(monevItem.tahap)}</Badge>
+                              <div className="flex flex-wrap items-center gap-1">
+                                <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
                               </div>
                             ) : (
-                              <Badge variant="outline">Belum dievaluasi</Badge>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">Belum dievaluasi</Badge>
                             )}
                           </TableCell>
                         </TableRow>
@@ -857,19 +860,19 @@ export default function MonevClientPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                     <div className="overflow-x-auto">
-                        <Table>
+                     <div className="overflow-x-auto lg:overflow-x-visible">
+                        <Table className="w-full lg:table-fixed text-xs">
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Aksi</TableHead>
-                                    <TableHead>Kegiatan</TableHead>
-                                    <TableHead>Anggaran</TableHead>
-                                    <TableHead>Realisasi</TableHead>
-                                    <TableHead>Sisa Anggaran</TableHead>
-                                    <TableHead>Volume</TableHead>
-                                    <TableHead>Tgl Realisasi</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Foto</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[44px]">Aksi</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[24%]">Kegiatan</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Anggaran</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Realisasi</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Sisa Anggaran</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[76px]">Volume</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Tgl Realisasi</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[130px]">Status</TableHead>
+                                    <TableHead className="px-2 py-2.5 lg:w-[58px] text-center">Foto</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -887,26 +890,26 @@ export default function MonevClientPage() {
                                     if (!monevItem) return null;
                                     return (
                                         <TableRow key={`rekap-${activity.id}`}>
-                                            <TableCell>
-                                                <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDeleteMonevClick(monevItem)}>
-                                                    <Trash2 className="h-4 w-4" />
+                                            <TableCell className="px-2 py-2">
+                                                <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteMonevClick(monevItem)}>
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                             </TableCell>
-                                            <TableCell className="font-medium">{activity.description}</TableCell>
-                                            <TableCell>{formatCurrency(activity.amount)}</TableCell>
-                                            <TableCell className="font-semibold">{formatCurrency(monevItem.realization)}</TableCell>
-                                            <TableCell className="font-medium">{formatCurrency(activity.amount - monevItem.realization)}</TableCell>
-                                            <TableCell>{monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : '-'}</TableCell>
-                                            <TableCell>{monevItem.tanggalRealisasi || '-'}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-wrap items-center gap-1.5">
-                                                  <Badge variant={getStatusVariant(monevItem.status)} className={monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : ''}>{monevItem.status}</Badge>
-                                                  <Badge variant="outline" className="text-xs">{normalizeTahap(monevItem.tahap)}</Badge>
+                                            <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{activity.description}</TableCell>
+                                            <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(activity.amount)}</TableCell>
+                                            <TableCell className="px-2 py-2 text-right font-semibold whitespace-nowrap">{formatCurrency(monevItem.realization)}</TableCell>
+                                            <TableCell className="px-2 py-2 text-right font-medium whitespace-nowrap">{formatCurrency(activity.amount - monevItem.realization)}</TableCell>
+                                            <TableCell className="px-2 py-2 whitespace-normal break-words">{monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : '-'}</TableCell>
+                                            <TableCell className="px-2 py-2 whitespace-nowrap">{monevItem.tanggalRealisasi || '-'}</TableCell>
+                                            <TableCell className="px-2 py-2">
+                                                <div className="flex flex-wrap items-center gap-1">
+                                                  <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
+                                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="px-2 py-2 text-center">
                                                 {monevItem.fotoUrl ? (
-                                                    <a href={monevItem.fotoUrl} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>Lihat</a>
+                                                    <a href={monevItem.fotoUrl} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 px-2 text-[11px]')}>Lihat</a>
                                                 ) : '-'}
                                             </TableCell>
                                         </TableRow>
