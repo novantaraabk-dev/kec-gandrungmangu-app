@@ -474,27 +474,27 @@ export default function MonevClientPage() {
             table.data-table td { word-wrap: break-word; }
             .nowrap { white-space: nowrap; }
             .text-right { text-align: right; }
-            .last-page-sheet { page-break-before: always; break-before: page; page-break-inside: avoid; break-inside: avoid; padding-top: ${forPdf ? '12px' : '0'}; }
+            .last-page-sheet { page-break-before: always; break-before: page; page-break-inside: avoid; break-inside: avoid; padding-top: ${forPdf ? '4px' : '0'}; }
             .summary-section { margin-top: 0; break-inside: avoid; page-break-inside: avoid; }
-            .summary-title { font-size: 10.5pt; font-weight: bold; margin-bottom: 8px; }
+            .summary-title { font-size: 9.5pt; font-weight: bold; margin-bottom: 4px; }
             table.summary-table { width: 100%; border-collapse: collapse; }
-            table.summary-table th, table.summary-table td { border: 1px solid #ccc !important; padding: 6px !important; text-align: left; font-size: 9pt; }
-            table.summary-table th { font-weight: bold; background-color: #f2f2f2; font-size: 9.5pt; }
+            table.summary-table th, table.summary-table td { border: 1px solid #ccc !important; padding: 3px 6px !important; text-align: left; font-size: 8pt; line-height: 1.2; }
+            table.summary-table th { font-weight: bold; background-color: #f2f2f2; font-size: 8.5pt; }
             table.summary-table th.text-right, table.summary-table td.text-right { text-align: right; }
-            .signature-section { margin-top: 24px; padding-top: 4px; break-inside: avoid; page-break-inside: avoid; }
-            .signature-date { text-align: center; margin-bottom: 14px; font-size: 10pt; }
-            .signature-columns { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; }
+            .signature-section { margin-top: 12px; padding-top: 0; break-inside: avoid; page-break-inside: avoid; }
+            .signature-date { text-align: center; margin-bottom: 8px; font-size: 9pt; }
+            .signature-columns { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; }
             .signature-left { width: 62%; }
             .signature-right { width: 34%; text-align: center; }
-            .signature-title { text-align: center; font-size: 10pt; font-weight: bold; margin-bottom: 12px; }
+            .signature-title { text-align: center; font-size: 9.5pt; font-weight: bold; margin-bottom: 6px; }
             table.tim-table { width: 100%; border-collapse: collapse; }
-            table.tim-table td { border: none !important; padding: 20px 6px 6px 6px !important; font-size: 10pt; vertical-align: bottom; text-align: left; }
+            table.tim-table td { border: none !important; padding: 14px 4px 4px 4px !important; font-size: 9pt; vertical-align: bottom; text-align: left; }
             .tim-no { width: 24px; }
             .tim-name { width: 36%; }
             .tim-jabatan { width: 32%; }
             .tim-sign { width: 28%; letter-spacing: 1px; }
-            .kades-space { height: 85px; }
-            .kades-name { font-weight: bold; font-size: 10pt; }
+            .kades-space { height: 70px; }
+            .kades-name { font-weight: bold; font-size: 9.5pt; }
           </style>
         </head>
         <body>
@@ -698,8 +698,16 @@ export default function MonevClientPage() {
             pageCanvas.height
           );
           const yOffsetMm = i === 0 ? 0 : 10;
-          const chunkHeightMm = (chunkHeightDom * pdfWidth) / domWidth;
-          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, yOffsetMm, pdfWidth, chunkHeightMm);
+          const maxAvailHeightMm = pdfHeight - yOffsetMm - 4;
+          let drawWidthMm = pdfWidth;
+          let drawHeightMm = (chunkHeightDom * pdfWidth) / domWidth;
+          if (drawHeightMm > maxAvailHeightMm) {
+            const fitRatio = maxAvailHeightMm / drawHeightMm;
+            drawWidthMm = pdfWidth * fitRatio;
+            drawHeightMm = maxAvailHeightMm;
+          }
+          const xOffsetMm = (pdfWidth - drawWidthMm) / 2;
+          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', xOffsetMm, yOffsetMm, drawWidthMm, drawHeightMm);
         }
       }
 
