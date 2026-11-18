@@ -396,10 +396,28 @@ export default function MonevClientPage() {
   const getPrintableHtml = (forPdf = false) => {
     const villageTitle = capitalizeFirstLetter(selectedVillage);
     const formattedMonevDate = formatTanggalIndonesia(rekapMonevDate);
-    const keepCount = Math.min(3, printableRekapData.length);
-    const splitIndex = Math.max(0, printableRekapData.length - keepCount);
-    const mainRows = printableRekapData.slice(0, splitIndex);
-    const trailingRows = printableRekapData.slice(splitIndex);
+
+    const summaryBySourceMap = new Map<string, { budget: number; realization: number; sisa: number }>();
+    for (const activity of printableRekapData) {
+      const monevItem = monevMap.get(activity.id);
+      const source = (monevItem?.fundingSource || activity.fundingSource || 'Lainnya').trim() || 'Lainnya';
+      const budget = monevItem ? monevItem.budget : activity.amount;
+      const realization = monevItem ? monevItem.realization : 0;
+      const current = summaryBySourceMap.get(source) ?? { budget: 0, realization: 0, sisa: 0 };
+      current.budget += budget;
+      current.realization += realization;
+      current.sisa += budget - realization;
+      summaryBySourceMap.set(source, current);
+    }
+    const summaryRows = Array.from(summaryBySourceMap.entries()).sort(([a], [b]) => a.localeCompare(b));
+    const grandTotal = summaryRows.reduce(
+      (acc, [, val]) => ({
+        budget: acc.budget + val.budget,
+        realization: acc.realization + val.realization,
+        sisa: acc.sisa + val.sisa,
+      }),
+      { budget: 0, realization: 0, sisa: 0 }
+    );
 
     const renderRekapRow = (activity: ApbdesDetail) => {
       const monevItem = monevMap.get(activity.id);
@@ -454,10 +472,15 @@ export default function MonevClientPage() {
             table.data-table th, table.data-table td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 9pt; }
             table.data-table th { font-weight: bold; background-color: #f2f2f2; font-size: 9.5pt; }
             table.data-table td { word-wrap: break-word; }
-            tbody.keep-with-signature { break-inside: avoid; page-break-inside: avoid; }
-            tr.signature-row > td { border: none !important; padding: 0 !important; background: transparent !important; }
             .nowrap { white-space: nowrap; }
             .text-right { text-align: right; }
+            .last-page-sheet { page-break-before: always; break-before: page; page-break-inside: avoid; break-inside: avoid; padding-top: ${forPdf ? '12px' : '0'}; }
+            .summary-section { margin-top: 0; break-inside: avoid; page-break-inside: avoid; }
+            .summary-title { font-size: 10.5pt; font-weight: bold; margin-bottom: 8px; }
+            table.summary-table { width: 100%; border-collapse: collapse; }
+            table.summary-table th, table.summary-table td { border: 1px solid #ccc !important; padding: 6px !important; text-align: left; font-size: 9pt; }
+            table.summary-table th { font-weight: bold; background-color: #f2f2f2; font-size: 9.5pt; }
+            table.summary-table th.text-right, table.summary-table td.text-right { text-align: right; }
             .signature-section { margin-top: 24px; padding-top: 4px; break-inside: avoid; page-break-inside: avoid; }
             .signature-date { text-align: center; margin-bottom: 14px; font-size: 10pt; }
             .signature-columns { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; }
@@ -495,44 +518,72 @@ export default function MonevClientPage() {
                   <th>Catatan</th>
                 </tr>
               </thead>
-              ${mainRows.length > 0 ? `<tbody>${mainRows.map(renderRekapRow).join("")}</tbody>` : ""}
-              <tbody class="keep-with-signature">
-                ${trailingRows.map(renderRekapRow).join("")}
-                <tr class="signature-row">
-                  <td colspan="9">
-                    <div class="signature-section">
-                      <div class="signature-date">Gandrungmangu, ${formattedMonevDate}</div>
-                      <div class="signature-columns">
-                        <div class="signature-left">
-                          <div class="signature-title">Tim Monev</div>
-                          <table class="tim-table">
-                            <tbody>
-                              ${timMonevMembers.map((member, i) => {
+              <tbody>
+                ${printableRekapData.map(renderRekapRow).join("")}
+              </tbody>
+            </table>
+            <div class="last-page-sheet">
+              <div class="summary-section">
+                <div class="summary-title">Rekapitulasi Per Sumber Anggaran — Desa ${villageTitle} (${selectedYear} - ${selectedTahap})</div>
+                <table class="summary-table">
+                  <thead>
+                    <tr>
+                      <th>Sumber Anggaran</th>
+                      <th class="text-right">Total Anggaran</th>
+                      <th class="text-right">Total Penyerapan (Realisasi)</th>
+                      <th class="text-right">Total Belum Diserap (Sisa)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${summaryRows.map(([source, val]) => `
+                      <tr>
+                        <td>${source}</td>
+                        <td class="text-right">${formatCurrency(val.budget)}</td>
+                        <td class="text-right">${formatCurrency(val.realization)}</td>
+                        <td class="text-right">${formatCurrency(val.sisa)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Total Keseluruhan</th>
+                      <th class="text-right">${formatCurrency(grandTotal.budget)}</th>
+                      <th class="text-right">${formatCurrency(grandTotal.realization)}</th>
+                      <th class="text-right">${formatCurrency(grandTotal.sisa)}</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div class="signature-section">
+                <div class="signature-date">Gandrungmangu, ${formattedMonevDate}</div>
+                <div class="signature-columns">
+                  <div class="signature-left">
+                    <div class="signature-title">Tim Monev</div>
+                    <table class="tim-table">
+                      <tbody>
+                        ${timMonevMembers.map((member, i) => {
       const memberName = member.name.trim() || '';
       const memberJabatan = member.jabatan.trim() || '';
       return `
-                                  <tr>
-                                    <td class="tim-no">${i + 1}.</td>
-                                    <td class="tim-name">${memberName}</td>
-                                    <td class="tim-jabatan">${memberJabatan}</td>
-                                    <td class="tim-sign">.....................</td>
-                                  </tr>
-                                `;
+                            <tr>
+                              <td class="tim-no">${i + 1}.</td>
+                              <td class="tim-name">${memberName}</td>
+                              <td class="tim-jabatan">${memberJabatan}</td>
+                              <td class="tim-sign">.....................</td>
+                            </tr>
+                          `;
     }).join('')}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div class="signature-right">
-                          <div class="signature-title">Kepala Desa ${villageTitle}</div>
-                          <div class="kades-space"></div>
-                          <div class="kades-name">${kadesName.trim() || '.....................'}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="signature-right">
+                    <div class="signature-title">Kepala Desa ${villageTitle}</div>
+                    <div class="kades-space"></div>
+                    <div class="kades-name">${kadesName.trim() || '.....................'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </body>
       </html>
@@ -586,74 +637,69 @@ export default function MonevClientPage() {
       const pageHeightDom = domWidth * (pdfHeight / pdfWidth);
       const scaleFactor = canvas.width / domWidth;
 
-      if (domHeight <= pageHeightDom) {
-        const imgData = canvas.toDataURL('image/png');
-        const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightMm);
-      } else {
-        const containerTop = reportElement.getBoundingClientRect().top;
-        const mainRowElements = Array.from(reportElement.querySelectorAll('tbody:not(.keep-with-signature) tr.data-row'));
-        const keepBlock = reportElement.querySelector('tbody.keep-with-signature');
-        const keepTop = keepBlock ? keepBlock.getBoundingClientRect().top - containerTop : domHeight;
+      const containerTop = reportElement.getBoundingClientRect().top;
+      const rowElements = Array.from(reportElement.querySelectorAll('table.data-table tr.data-row'));
+      const lastSheet = reportElement.querySelector('.last-page-sheet');
+      const lastSheetTop = lastSheet ? lastSheet.getBoundingClientRect().top - containerTop : domHeight;
 
-        const breakPoints: number[] = [0];
-        let currentStart = 0;
+      const breakPoints: number[] = [0];
+      let currentStart = 0;
 
-        while (currentStart + pageHeightDom < domHeight) {
-          const maxBottom = currentStart + pageHeightDom - 38;
-          let candidateBreak = currentStart;
+      // Paginate main data table up to lastSheetTop
+      while (currentStart + pageHeightDom - 38 < lastSheetTop) {
+        const maxBottom = currentStart + pageHeightDom - 38;
+        let candidateBreak = currentStart;
 
-          if (keepTop > currentStart && keepTop <= maxBottom && domHeight > currentStart + pageHeightDom) {
-            // Keep trailing rows + signature together on the next page
-            candidateBreak = keepTop;
-          } else {
-            for (const row of mainRowElements) {
-              const rowBottom = row.getBoundingClientRect().bottom - containerTop;
-              if (rowBottom > currentStart && rowBottom <= maxBottom) {
-                candidateBreak = rowBottom;
-              }
-            }
+        for (const row of rowElements) {
+          const rowBottom = row.getBoundingClientRect().bottom - containerTop;
+          if (rowBottom > currentStart && rowBottom <= maxBottom) {
+            candidateBreak = rowBottom;
           }
-
-          if (candidateBreak <= currentStart) {
-            candidateBreak = Math.min(currentStart + pageHeightDom - 38, domHeight);
-          }
-
-          breakPoints.push(candidateBreak);
-          currentStart = candidateBreak;
         }
-        breakPoints.push(domHeight);
 
-        for (let i = 0; i < breakPoints.length - 1; i++) {
-          const startY = breakPoints[i];
-          const endY = breakPoints[i + 1];
-          const chunkHeightDom = endY - startY;
-          if (chunkHeightDom <= 0) continue;
+        if (candidateBreak <= currentStart) {
+          candidateBreak = Math.min(currentStart + pageHeightDom - 38, lastSheetTop);
+        }
 
-          if (i > 0) pdf.addPage();
+        breakPoints.push(candidateBreak);
+        currentStart = candidateBreak;
+      }
 
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = Math.ceil(chunkHeightDom * scaleFactor);
-          const ctx = pageCanvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-            ctx.drawImage(
-              canvas,
-              0,
-              Math.floor(startY * scaleFactor),
-              canvas.width,
-              pageCanvas.height,
-              0,
-              0,
-              canvas.width,
-              pageCanvas.height
-            );
-            const yOffsetMm = i === 0 ? 0 : 10;
-            const chunkHeightMm = (chunkHeightDom * pdfWidth) / domWidth;
-            pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, yOffsetMm, pdfWidth, chunkHeightMm);
-          }
+      // Always place .last-page-sheet on its own dedicated final page
+      if (lastSheet && lastSheetTop > currentStart) {
+        breakPoints.push(lastSheetTop);
+      }
+      breakPoints.push(domHeight);
+
+      for (let i = 0; i < breakPoints.length - 1; i++) {
+        const startY = breakPoints[i];
+        const endY = breakPoints[i + 1];
+        const chunkHeightDom = endY - startY;
+        if (chunkHeightDom <= 0) continue;
+
+        if (i > 0) pdf.addPage();
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.ceil(chunkHeightDom * scaleFactor);
+        const ctx = pageCanvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(
+            canvas,
+            0,
+            Math.floor(startY * scaleFactor),
+            canvas.width,
+            pageCanvas.height,
+            0,
+            0,
+            canvas.width,
+            pageCanvas.height
+          );
+          const yOffsetMm = i === 0 ? 0 : 10;
+          const chunkHeightMm = (chunkHeightDom * pdfWidth) / domWidth;
+          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, yOffsetMm, pdfWidth, chunkHeightMm);
         }
       }
 
