@@ -37,10 +37,10 @@ import html2canvas from 'html2canvas';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwC7P8gr8O5zxcUzeKOFoS2uxZ_Zhw5P_S-EoSFzFVELKRpIxq6gsIfqW_UNoKKhB2Agw/exec';
 
 const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result as string);
+  reader.onerror = error => reject(error);
 });
 
 function capitalizeFirstLetter(string: string) {
@@ -75,6 +75,15 @@ const normalizeTahap = (tahap?: string): TahapMonev => {
   return 'Tahap I';
 };
 
+const compareActivityCode = (a?: string, b?: string): number => {
+  const codeA = (a ?? '').trim();
+  const codeB = (b ?? '').trim();
+  if (!codeA && !codeB) return 0;
+  if (!codeA) return 1;
+  if (!codeB) return -1;
+  return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+};
+
 const getStatusVariant = (status: string): "default" | "secondary" | "outline" | "destructive" => {
   switch (status) {
     case 'SPJ Lengkap': return 'default';
@@ -94,7 +103,7 @@ export default function MonevClientPage() {
   const [selectedBidang, setSelectedBidang] = useState<string>('Semua Bidang');
   const [selectedSumberDana, setSelectedSumberDana] = useState<string>('Semua Sumber');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,7 +119,7 @@ export default function MonevClientPage() {
   const [tanggalRealisasi, setTanggalRealisasi] = useState('');
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
-  
+
   const [monevToDelete, setMonevToDelete] = useState<Monev | null>(null);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
@@ -123,7 +132,7 @@ export default function MonevClientPage() {
   );
 
   const apbdesId = selectedVillage ? `${selectedVillage}-${selectedYear}` : null;
-  
+
   const villageSettingsRef = useMemoFirebase(() => (firestore && selectedVillage) ? doc(firestore, 'villageSettings', selectedVillage) : null, [firestore, selectedVillage]);
   const { data: villageSettings } = useDoc<{ spjDriveFolderId?: string }>(villageSettingsRef);
 
@@ -138,7 +147,7 @@ export default function MonevClientPage() {
     return query(collection(firestore, 'monev'), where('village', '==', selectedVillage), where('year', '==', parseInt(selectedYear)));
   }, [firestore, selectedVillage, selectedYear]);
   const { data: monevData, isLoading: isLoadingMonev } = useCollection<Monev>(monevQuery);
-  
+
   const monevMap = useMemo(() => {
     if (!monevData) return new Map<string, Monev>();
     const targetOrder = TAHAP_ORDER[selectedTahap];
@@ -168,7 +177,8 @@ export default function MonevClientPage() {
   const filteredActivities = useMemo(() => {
     if (!allActivitiesForYear) return [];
     const queryText = searchQuery.trim().toLowerCase();
-    return allActivitiesForYear.filter(activity => {
+    return allActivitiesForYear
+      .filter(activity => {
         const bidangMatch = selectedBidang === 'Semua Bidang' || activity.category === selectedBidang;
         const sumberDanaMatch = selectedSumberDana === 'Semua Sumber' || activity.fundingSource === selectedSumberDana;
         const searchMatch =
@@ -176,49 +186,65 @@ export default function MonevClientPage() {
           (activity.activityCode ?? '').toLowerCase().includes(queryText) ||
           (activity.description ?? '').toLowerCase().includes(queryText);
         return bidangMatch && sumberDanaMatch && searchMatch;
-    });
+      })
+      .sort((a, b) => compareActivityCode(a.activityCode, b.activityCode));
   }, [allActivitiesForYear, selectedBidang, selectedSumberDana, searchQuery]);
 
   const rekapData = useMemo(() => {
     if (!allActivitiesForYear || !monevMap) return [];
-    return allActivitiesForYear.filter(activity => monevMap.has(activity.id));
+    return allActivitiesForYear
+      .filter(activity => monevMap.has(activity.id))
+      .sort((a, b) => {
+        const codeA = monevMap.get(a.id)?.apbdesCode ?? a.activityCode;
+        const codeB = monevMap.get(b.id)?.apbdesCode ?? b.activityCode;
+        return compareActivityCode(codeA, codeB);
+      });
+  }, [allActivitiesForYear, monevMap]);
+
+  const printableRekapData = useMemo(() => {
+    if (!allActivitiesForYear) return [];
+    return [...allActivitiesForYear].sort((a, b) => {
+      const codeA = monevMap.get(a.id)?.apbdesCode ?? a.activityCode;
+      const codeB = monevMap.get(b.id)?.apbdesCode ?? b.activityCode;
+      return compareActivityCode(codeA, codeB);
+    });
   }, [allActivitiesForYear, monevMap]);
 
   const handleFileUpload = async (file: File, folderId: string, desiredFileName: string) => {
     if (!file || !folderId || !desiredFileName) {
-        throw new Error("Data tidak lengkap untuk unggah file.");
+      throw new Error("Data tidak lengkap untuk unggah file.");
     }
     const base64File = await toBase64(file);
     if (!base64File || typeof base64File !== 'string') {
-        throw new Error("Gagal mengubah file menjadi format base64.");
+      throw new Error("Gagal mengubah file menjadi format base64.");
     }
 
     const payload = {
-        fileData: base64File,
-        fileName: desiredFileName,
-        fileType: file.type || 'application/octet-stream',
-        folderId: folderId
+      fileData: base64File,
+      fileName: desiredFileName,
+      fileType: file.type || 'application/octet-stream',
+      folderId: folderId
     };
 
     try {
-        const res = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            redirect: "follow",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-        });
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        redirect: "follow",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
 
-        if (!res.ok) {
-            throw new Error(`Gagal mengunggah file. Server merespons dengan status ${res.status}.`);
-        }
+      if (!res.ok) {
+        throw new Error(`Gagal mengunggah file. Server merespons dengan status ${res.status}.`);
+      }
 
-        const result = await res.json();
-        if (result.status !== 'SUCCESS') {
-            throw new Error(`Kesalahan Skrip Google Apps: ${result.message}.`);
-        }
-        return result.fileUrl;
+      const result = await res.json();
+      if (result.status !== 'SUCCESS') {
+        throw new Error(`Kesalahan Skrip Google Apps: ${result.message}.`);
+      }
+      return result.fileUrl;
     } catch (error) {
-        throw error;
+      throw error;
     }
   };
 
@@ -270,22 +296,22 @@ export default function MonevClientPage() {
         setIsSubmitting(false);
         return;
       }
-      
+
       let fotoUrlToSave = currentMonev?.fotoUrl || '';
       if (fotoFile) {
         const folderId = villageSettings?.spjDriveFolderId;
         if (!folderId) {
-            toast({ variant: "destructive", title: "Folder Tidak Ditemukan", description: `ID Folder Google Drive untuk desa ${selectedVillage} belum diatur. Upload foto dibatalkan.` });
+          toast({ variant: "destructive", title: "Folder Tidak Ditemukan", description: `ID Folder Google Drive untuk desa ${selectedVillage} belum diatur. Upload foto dibatalkan.` });
         } else {
           try {
-              const uploadDate = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-              const tahapSlug = selectedTahap.replace(/\s+/g, '');
-              const extension = fotoFile.name.split('.').pop() || 'jpg';
-              const desiredFileName = `MONEV_${selectedVillage}_${tahapSlug}_${uploadDate}_${selectedActivity.id}.${extension}`;
-              fotoUrlToSave = await handleFileUpload(fotoFile, folderId, desiredFileName);
+            const uploadDate = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            const tahapSlug = selectedTahap.replace(/\s+/g, '');
+            const extension = fotoFile.name.split('.').pop() || 'jpg';
+            const desiredFileName = `MONEV_${selectedVillage}_${tahapSlug}_${uploadDate}_${selectedActivity.id}.${extension}`;
+            fotoUrlToSave = await handleFileUpload(fotoFile, folderId, desiredFileName);
           } catch (uploadError: unknown) {
-              const msg = uploadError instanceof Error ? uploadError.message : 'Terjadi kesalahan saat mengunggah foto.';
-              toast({ variant: 'destructive', title: 'Gagal Upload Foto', description: msg });
+            const msg = uploadError instanceof Error ? uploadError.message : 'Terjadi kesalahan saat mengunggah foto.';
+            toast({ variant: 'destructive', title: 'Gagal Upload Foto', description: msg });
           }
         }
       }
@@ -333,7 +359,7 @@ export default function MonevClientPage() {
     setMonevToDelete(monev);
     setIsDeleteAlertOpen(true);
   };
-  
+
   const confirmDeleteMonev = async () => {
     if (!monevToDelete || !firestore) return;
     setIsSubmitting(true);
@@ -370,20 +396,34 @@ export default function MonevClientPage() {
   const getPrintableHtml = (forPdf = false) => {
     const villageTitle = capitalizeFirstLetter(selectedVillage);
     const formattedMonevDate = formatTanggalIndonesia(rekapMonevDate);
-    const keepCount = Math.min(3, rekapData.length);
-    const splitIndex = Math.max(0, rekapData.length - keepCount);
-    const mainRows = rekapData.slice(0, splitIndex);
-    const trailingRows = rekapData.slice(splitIndex);
+    const keepCount = Math.min(3, printableRekapData.length);
+    const splitIndex = Math.max(0, printableRekapData.length - keepCount);
+    const mainRows = printableRekapData.slice(0, splitIndex);
+    const trailingRows = printableRekapData.slice(splitIndex);
 
     const renderRekapRow = (activity: ApbdesDetail) => {
       const monevItem = monevMap.get(activity.id);
-      if (!monevItem) return "";
+      if (!monevItem) {
+        return `
+          <tr class="data-row">
+            <td class="nowrap">${activity.activityCode || '-'}</td>
+            <td>${activity.description}</td>
+            <td class="text-right">${formatCurrency(activity.amount)}</td>
+            <td class="text-right">-</td>
+            <td class="text-right">${formatCurrency(activity.amount)}</td>
+            <td class="nowrap">-</td>
+            <td class="nowrap">-</td>
+            <td>Kegiatan Belum Realisasi</td>
+            <td>-</td>
+          </tr>
+        `;
+      }
       const itemTahap = normalizeTahap(monevItem.tahap);
       const sisaAnggaran = monevItem.budget - monevItem.realization;
       return `
         <tr class="data-row">
-          <td class="nowrap">${monevItem.apbdesCode || '-'}</td>
-          <td>${monevItem.activity}</td>
+          <td class="nowrap">${monevItem.apbdesCode || activity.activityCode || '-'}</td>
+          <td>${monevItem.activity || activity.description}</td>
           <td class="text-right">${formatCurrency(monevItem.budget)}</td>
           <td class="text-right">${formatCurrency(monevItem.realization)}</td>
           <td class="text-right">${formatCurrency(sisaAnggaran)}</td>
@@ -437,9 +477,9 @@ export default function MonevClientPage() {
         <body>
           <div class="print-container">
             <div class="header">
-              <h1>Rekapitulasi Hasil Monitoring dan Evaluasi</h1>
+              <h1>Rekapitulasi Hasil Monitoring dan Evaluasi APBDes</h1>
               <h3>Desa: ${villageTitle} - Tahun Anggaran: ${selectedYear} - ${selectedTahap}</h3>
-              <p class="date-subtitle">Tanggal Monev: ${formattedMonevDate}</p>
+              <p class="date-subtitle">Tanggal Monev : ${formattedMonevDate}</p>
             </div>
             <table class="data-table">
               <thead>
@@ -468,9 +508,9 @@ export default function MonevClientPage() {
                           <table class="tim-table">
                             <tbody>
                               ${timMonevMembers.map((member, i) => {
-                                const memberName = member.name.trim() || '';
-                                const memberJabatan = member.jabatan.trim() || '';
-                                return `
+      const memberName = member.name.trim() || '';
+      const memberJabatan = member.jabatan.trim() || '';
+      return `
                                   <tr>
                                     <td class="tim-no">${i + 1}.</td>
                                     <td class="tim-name">${memberName}</td>
@@ -478,7 +518,7 @@ export default function MonevClientPage() {
                                     <td class="tim-sign">.....................</td>
                                   </tr>
                                 `;
-                              }).join('')}
+    }).join('')}
                             </tbody>
                           </table>
                         </div>
@@ -500,7 +540,7 @@ export default function MonevClientPage() {
   };
 
   const handlePrint = () => {
-    if (!rekapData || rekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
+    if (!printableRekapData || printableRekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
     const printContent = getPrintableHtml(false);
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -517,21 +557,21 @@ export default function MonevClientPage() {
   };
 
   const handleDownloadPdf = async () => {
-    if (!rekapData || rekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
-  
+    if (!printableRekapData || printableRekapData.length === 0) return toast({ variant: "destructive", title: "Tidak Ada Data" });
+
     const villageTitle = capitalizeFirstLetter(selectedVillage);
     const tahapSlug = selectedTahap.replace(/\s+/g, '-');
     const fileName = `Rekap-Monev-${villageTitle}-${selectedYear}-${tahapSlug}.pdf`;
-  
+
     const reportElement = document.createElement('div');
     reportElement.style.position = 'absolute';
     reportElement.style.left = '-9999px';
     reportElement.style.width = '1123px';
     reportElement.style.backgroundColor = '#ffffff';
-  
+
     reportElement.innerHTML = getPrintableHtml(true);
     document.body.appendChild(reportElement);
-  
+
     try {
       const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
       const pdf = new jsPDF({
@@ -668,9 +708,9 @@ export default function MonevClientPage() {
               </thead>
               <tbody>
                 ${filteredActivities
-                  .map((activity) => {
-                    const monevItem = monevMap.get(activity.id);
-                    return `
+        .map((activity) => {
+          const monevItem = monevMap.get(activity.id);
+          return `
                       <tr>
                         <td class="nowrap">${activity.activityCode || '-'}</td>
                         <td>${activity.description}</td>
@@ -681,8 +721,8 @@ export default function MonevClientPage() {
                         <td>${monevItem ? `${monevItem.status} (${normalizeTahap(monevItem.tahap)})` : 'Belum dievaluasi'}</td>
                       </tr>
                     `;
-                  })
-                  .join("")}
+        })
+        .join("")}
               </tbody>
             </table>
           </div>
@@ -726,274 +766,274 @@ export default function MonevClientPage() {
 
           <TabsContent value="kegiatan">
             <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="h-6 w-6" />
-                <span>Daftar Kegiatan APBDes</span>
-            </CardTitle>
-            <CardDescription>Filter berdasarkan desa, tahun, tahap, bidang, sumber dana, kode kegiatan, dan kegiatan.</CardDescription>
-            <div className="flex flex-wrap items-center gap-4 pt-4">
-              <Select value={selectedVillage} onValueChange={setSelectedVillage}>
-                <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Pilih Desa..." /></SelectTrigger>
-                <SelectContent>{villages.map(v => <SelectItem key={v} value={v.toLowerCase()}>{v}</SelectItem>)}</SelectContent>
-              </Select>
-               <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Tahun..." /></SelectTrigger>
-                <SelectContent>{[new Date().getFullYear(), new Date().getFullYear()-1].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
-              </Select>
-              <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
-                <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
-                <SelectContent>
-                  {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={selectedBidang} onValueChange={setSelectedBidang} disabled={!selectedVillage}>
-                <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Pilih Bidang..." /></SelectTrigger>
-                <SelectContent>{uniqueBidang.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-              </Select>
-               <Select value={selectedSumberDana} onValueChange={setSelectedSumberDana} disabled={!selectedVillage}>
-                <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Pilih Sumber Dana..." /></SelectTrigger>
-                <SelectContent>{uniqueSumberDana.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
-              <div className="relative w-full sm:w-[280px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari Kode Kegiatan atau Kegiatan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  disabled={!selectedVillage}
-                  className="pl-9"
-                />
-              </div>
-              <Button variant="outline" onClick={handlePrintActivities} disabled={!filteredActivities || filteredActivities.length === 0}>
-                <Printer className="mr-2 h-4 w-4" /> Cetak Daftar
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto lg:overflow-x-visible">
-              <Table className="w-full lg:table-fixed text-xs">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Aksi</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[105px]">Kode</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[24%]">Kegiatan</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Anggaran</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Sumber</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Realisasi</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Sisa Anggaran</TableHead>
-                    <TableHead className="px-2 py-2.5 lg:w-[130px]">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(isLoadingActivities || isLoadingMonev) && selectedVillage ? (
-                    <TableRow><TableCell colSpan={8} className="text-center h-24"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></TableCell></TableRow>
-                  ) : !selectedVillage ? (
-                     <TableRow><TableCell colSpan={8} className="text-center h-24">Silakan pilih desa untuk menampilkan data.</TableCell></TableRow>
-                  ) : filteredActivities.length > 0 ? (
-                    filteredActivities.map((item) => {
-                      const monevItem = monevMap.get(item.id);
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell className="px-2 py-2">
-                            <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]" onClick={() => handleEditClick(item)}>
-                                <Edit className="mr-1 h-3 w-3" /> Input/Edit
-                            </Button>
-                          </TableCell>
-                          <TableCell className="px-2 py-2 font-mono text-[11px] break-all">{item.activityCode}</TableCell>
-                          <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{item.description}</TableCell>
-                          <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(item.amount)}</TableCell>
-                          <TableCell className="px-2 py-2 whitespace-normal break-words">{item.fundingSource}</TableCell>
-                          <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-semibold' : 'text-muted-foreground')}>{monevItem ? formatCurrency(monevItem.realization) : '-'}</TableCell>
-                          <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-medium' : 'text-muted-foreground')}>{monevItem ? formatCurrency(item.amount - monevItem.realization) : '-'}</TableCell>
-                          <TableCell className="px-2 py-2">
-                            {monevItem ? (
-                              <div className="flex flex-wrap items-center gap-1">
-                                <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
-                              </div>
-                            ) : (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">Belum dievaluasi</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  ) : (
-                     <TableRow><TableCell colSpan={8} className="text-center h-24">Tidak ada data kegiatan APBDes untuk filter yang dipilih.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardCheck className="h-6 w-6" />
+                  <span>Daftar Kegiatan APBDes</span>
+                </CardTitle>
+                <CardDescription>Filter berdasarkan desa, tahun, tahap, bidang, sumber dana, kode kegiatan, dan kegiatan.</CardDescription>
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                  <Select value={selectedVillage} onValueChange={setSelectedVillage}>
+                    <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Pilih Desa..." /></SelectTrigger>
+                    <SelectContent>{villages.map(v => <SelectItem key={v} value={v.toLowerCase()}>{v}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Tahun..." /></SelectTrigger>
+                    <SelectContent>{[new Date().getFullYear(), new Date().getFullYear() - 1].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
+                    <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
+                    <SelectContent>
+                      {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedBidang} onValueChange={setSelectedBidang} disabled={!selectedVillage}>
+                    <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Pilih Bidang..." /></SelectTrigger>
+                    <SelectContent>{uniqueBidang.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={selectedSumberDana} onValueChange={setSelectedSumberDana} disabled={!selectedVillage}>
+                    <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Pilih Sumber Dana..." /></SelectTrigger>
+                    <SelectContent>{uniqueSumberDana.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <div className="relative w-full sm:w-[280px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Cari Kode Kegiatan atau Kegiatan..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      disabled={!selectedVillage}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Button variant="outline" onClick={handlePrintActivities} disabled={!filteredActivities || filteredActivities.length === 0}>
+                    <Printer className="mr-2 h-4 w-4" /> Cetak Daftar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto lg:overflow-x-visible">
+                  <Table className="w-full lg:table-fixed text-xs">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="px-2 py-2.5 lg:w-[104px]">Aksi</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[82px]">Kode</TableHead>
+                        <TableHead className="px-2 py-2.5">Kegiatan</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Anggaran</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[78px]">Sumber</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Realisasi</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[108px] text-right">Sisa Anggaran</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[125px]">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(isLoadingActivities || isLoadingMonev) && selectedVillage ? (
+                        <TableRow><TableCell colSpan={8} className="text-center h-24"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></TableCell></TableRow>
+                      ) : !selectedVillage ? (
+                        <TableRow><TableCell colSpan={8} className="text-center h-24">Silakan pilih desa untuk menampilkan data.</TableCell></TableRow>
+                      ) : filteredActivities.length > 0 ? (
+                        filteredActivities.map((item) => {
+                          const monevItem = monevMap.get(item.id);
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell className="px-2 py-2">
+                                <Button variant="outline" size="sm" className="h-7 px-2 text-[11px] whitespace-nowrap" onClick={() => handleEditClick(item)}>
+                                  <Edit className="mr-1 h-3 w-3 shrink-0" /> Input/Edit
+                                </Button>
+                              </TableCell>
+                              <TableCell className="px-2 py-2 font-mono text-[11px] whitespace-nowrap">{item.activityCode}</TableCell>
+                              <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{item.description}</TableCell>
+                              <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(item.amount)}</TableCell>
+                              <TableCell className="px-2 py-2 whitespace-normal break-words">{item.fundingSource}</TableCell>
+                              <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-semibold' : 'text-muted-foreground')}>{monevItem ? formatCurrency(monevItem.realization) : '-'}</TableCell>
+                              <TableCell className={cn("px-2 py-2 text-right whitespace-nowrap", monevItem ? 'font-medium' : 'text-muted-foreground')}>{monevItem ? formatCurrency(item.amount - monevItem.realization) : '-'}</TableCell>
+                              <TableCell className="px-2 py-2">
+                                {monevItem ? (
+                                  <div className="flex flex-wrap items-center gap-1">
+                                    <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
+                                  </div>
+                                ) : (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">Belum dievaluasi</Badge>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow><TableCell colSpan={8} className="text-center h-24">Tidak ada data kegiatan APBDes untuk filter yang dipilih.</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="rekap">
             <Card>
-                <CardHeader>
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <CardTitle>Rekap Hasil Monev</CardTitle>
-                        <CardDescription>Daftar kegiatan yang telah dievaluasi untuk Desa terpilih ({selectedTahap}).</CardDescription>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
-                          <SelectTrigger className="w-[135px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
-                          <SelectContent>
-                            {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Button variant="outline" onClick={() => setIsSignatureDialogOpen(true)} disabled={!selectedVillage}>
-                            <Users className="mr-2 h-4 w-4" />
-                            Tim Monev &amp; Kades
-                        </Button>
-                        <Button variant="outline" onClick={handlePrint} disabled={rekapData.length === 0}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Cetak
-                        </Button>
-                        <Button onClick={handleDownloadPdf} disabled={rekapData.length === 0}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Unduh PDF
-                        </Button>
-                      </div>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <CardTitle>Rekap Hasil Monev</CardTitle>
+                    <CardDescription>Daftar kegiatan yang telah dievaluasi untuk Desa terpilih ({selectedTahap}).</CardDescription>
                   </div>
-                </CardHeader>
-                <CardContent>
-                     <div className="overflow-x-auto lg:overflow-x-visible">
-                        <Table className="w-full lg:table-fixed text-xs">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="px-2 py-2.5 lg:w-[44px]">Aksi</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[24%]">Kegiatan</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Anggaran</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Realisasi</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Sisa Anggaran</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[76px]">Volume</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[88px]">Tgl Realisasi</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[130px]">Status</TableHead>
-                                    <TableHead className="px-2 py-2.5 lg:w-[58px] text-center">Foto</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {!selectedVillage ? (
-                                    <TableRow>
-                                        <TableCell colSpan={9} className="text-center h-24">Silakan pilih desa pada tab Daftar Kegiatan APBDes untuk menampilkan data.</TableCell>
-                                    </TableRow>
-                                ) : rekapData.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={9} className="text-center h-24">Belum ada kegiatan yang dievaluasi untuk desa dan tahun terpilih.</TableCell>
-                                    </TableRow>
-                                ) : (
-                                  rekapData.map(activity => {
-                                    const monevItem = monevMap.get(activity.id);
-                                    if (!monevItem) return null;
-                                    return (
-                                        <TableRow key={`rekap-${activity.id}`}>
-                                            <TableCell className="px-2 py-2">
-                                                <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteMonevClick(monevItem)}>
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{activity.description}</TableCell>
-                                            <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(activity.amount)}</TableCell>
-                                            <TableCell className="px-2 py-2 text-right font-semibold whitespace-nowrap">{formatCurrency(monevItem.realization)}</TableCell>
-                                            <TableCell className="px-2 py-2 text-right font-medium whitespace-nowrap">{formatCurrency(activity.amount - monevItem.realization)}</TableCell>
-                                            <TableCell className="px-2 py-2 whitespace-normal break-words">{monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : '-'}</TableCell>
-                                            <TableCell className="px-2 py-2 whitespace-nowrap">{monevItem.tanggalRealisasi || '-'}</TableCell>
-                                            <TableCell className="px-2 py-2">
-                                                <div className="flex flex-wrap items-center gap-1">
-                                                  <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
-                                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-2 py-2 text-center">
-                                                {monevItem.fotoUrl ? (
-                                                    <a href={monevItem.fotoUrl} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 px-2 text-[11px]')}>Lihat</a>
-                                                ) : '-'}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                  })
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select value={selectedTahap} onValueChange={(v) => setSelectedTahap(v as TahapMonev)}>
+                      <SelectTrigger className="w-[135px]"><SelectValue placeholder="Pilih Tahap..." /></SelectTrigger>
+                      <SelectContent>
+                        {TAHAP_OPTIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" onClick={() => setIsSignatureDialogOpen(true)} disabled={!selectedVillage}>
+                      <Users className="mr-2 h-4 w-4" />
+                      Tim Monev &amp; Kades
+                    </Button>
+                    <Button variant="outline" onClick={handlePrint} disabled={printableRekapData.length === 0}>
+                      <Printer className="mr-2 h-4 w-4" />
+                      Cetak
+                    </Button>
+                    <Button onClick={handleDownloadPdf} disabled={printableRekapData.length === 0}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Unduh PDF
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto lg:overflow-x-visible">
+                  <Table className="w-full lg:table-fixed text-xs">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="px-2 py-2.5 lg:w-[44px]">Aksi</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[24%]">Kegiatan</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Anggaran</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Realisasi</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[104px] text-right">Sisa Anggaran</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[76px]">Volume</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[88px]">Tgl Realisasi</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[130px]">Status</TableHead>
+                        <TableHead className="px-2 py-2.5 lg:w-[58px] text-center">Foto</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {!selectedVillage ? (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center h-24">Silakan pilih desa pada tab Daftar Kegiatan APBDes untuk menampilkan data.</TableCell>
+                        </TableRow>
+                      ) : rekapData.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center h-24">Belum ada kegiatan yang dievaluasi untuk desa dan tahun terpilih.</TableCell>
+                        </TableRow>
+                      ) : (
+                        rekapData.map(activity => {
+                          const monevItem = monevMap.get(activity.id);
+                          if (!monevItem) return null;
+                          return (
+                            <TableRow key={`rekap-${activity.id}`}>
+                              <TableCell className="px-2 py-2">
+                                <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteMonevClick(monevItem)}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </TableCell>
+                              <TableCell className="px-2 py-2 font-medium whitespace-normal break-words leading-snug">{activity.description}</TableCell>
+                              <TableCell className="px-2 py-2 text-right whitespace-nowrap">{formatCurrency(activity.amount)}</TableCell>
+                              <TableCell className="px-2 py-2 text-right font-semibold whitespace-nowrap">{formatCurrency(monevItem.realization)}</TableCell>
+                              <TableCell className="px-2 py-2 text-right font-medium whitespace-nowrap">{formatCurrency(activity.amount - monevItem.realization)}</TableCell>
+                              <TableCell className="px-2 py-2 whitespace-normal break-words">{monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : '-'}</TableCell>
+                              <TableCell className="px-2 py-2 whitespace-nowrap">{monevItem.tanggalRealisasi || '-'}</TableCell>
+                              <TableCell className="px-2 py-2">
+                                <div className="flex flex-wrap items-center gap-1">
+                                  <Badge variant={getStatusVariant(monevItem.status)} className={cn("text-[10px] px-1.5 py-0.5 leading-tight", monevItem.status === 'SPJ Lengkap' ? 'bg-green-600' : '')}>{monevItem.status}</Badge>
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 leading-tight">{normalizeTahap(monevItem.tahap)}</Badge>
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-2 py-2 text-center">
+                                {monevItem.fotoUrl ? (
+                                  <a href={monevItem.fotoUrl} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 px-2 text-[11px]')}>Lihat</a>
+                                ) : '-'}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-      
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-xl">
-              <DialogHeader>
-                  <DialogTitle>Input Hasil Monev ({selectedTahap})</DialogTitle>
-                  <DialogDescription>
-                      <span className="font-semibold block">{selectedActivity?.description}</span>
-                      <span className="block">Anggaran: {formatCurrency(selectedActivity?.amount || 0)} &bull; {selectedTahap}</span>
-                  </DialogDescription>
-              </DialogHeader>
-              <ScrollArea className="h-[60vh] pr-6">
-                <div className="grid gap-4 py-4 pr-1">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                          <Label>Realisasi (Rp)</Label>
-                          <Input type="number" value={realization} onChange={(e) => setRealization(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Status</Label>
-                          <Select value={status} onValueChange={setStatus}>
-                              <SelectTrigger><SelectValue placeholder="Pilih status SPJ..." /></SelectTrigger>
-                              <SelectContent>
-                                  <SelectItem value="SPJ Lengkap">SPJ Lengkap</SelectItem>
-                                  <SelectItem value="SPJ Belum Lengkap">SPJ Belum Lengkap</SelectItem>
-                              </SelectContent>
-                          </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Volume</Label>
-                        <Input placeholder="Nilai, cth: 100" value={volumeValue} onChange={(e) => setVolumeValue(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Satuan Volume</Label>
-                        <Select value={volumeUnit} onValueChange={setVolumeUnit}>
-                            <SelectTrigger><SelectValue placeholder="Pilih satuan..." /></SelectTrigger>
-                            <SelectContent>
-                                {['Unit', 'Panjang', 'Orang', 'Bulan', 'Tahun', 'Paket'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tanggalRealisasi">Tanggal Realisasi (Opsional)</Label>
-                      <Input id="tanggalRealisasi" type="date" value={tanggalRealisasi} onChange={(e) => setTanggalRealisasi(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="foto">Foto Kegiatan (Opsional)</Label>
-                      {(fotoPreview || currentMonev?.fotoUrl) && (
-                          <div className="relative w-full h-40 bg-muted rounded-md mt-2">
-                              <Image src={fotoPreview || currentMonev!.fotoUrl!} alt="Preview Foto" layout="fill" className="rounded-md object-contain" />
-                          </div>
-                      )}
-                      <Input id="foto" type="file" className="cursor-pointer" accept="image/*" onChange={handleFotoFileChange} />
-                    </div>
-                    <div className="grid w-full gap-1.5">
-                      <Label htmlFor="notes">Catatan (Opsional)</Label>
-                      <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Tambahkan catatan monev di sini..." />
-                    </div>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Input Hasil Monev ({selectedTahap})</DialogTitle>
+            <DialogDescription>
+              <span className="font-semibold block">{selectedActivity?.description}</span>
+              <span className="block">Anggaran: {formatCurrency(selectedActivity?.amount || 0)} &bull; {selectedTahap}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] pr-6">
+            <div className="grid gap-4 py-4 pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Realisasi (Rp)</Label>
+                  <Input type="number" value={realization} onChange={(e) => setRealization(e.target.value)} />
                 </div>
-              </ScrollArea>
-              <DialogFooter className="pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>Batal</Button>
-                  <Button onClick={handleFormSubmit} disabled={isSubmitting}>
-                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Simpan Hasil Monev
-                  </Button>
-              </DialogFooter>
-          </DialogContent>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger><SelectValue placeholder="Pilih status SPJ..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SPJ Lengkap">SPJ Lengkap</SelectItem>
+                      <SelectItem value="SPJ Belum Lengkap">SPJ Belum Lengkap</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Volume</Label>
+                  <Input placeholder="Nilai, cth: 100" value={volumeValue} onChange={(e) => setVolumeValue(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Satuan Volume</Label>
+                  <Select value={volumeUnit} onValueChange={setVolumeUnit}>
+                    <SelectTrigger><SelectValue placeholder="Pilih satuan..." /></SelectTrigger>
+                    <SelectContent>
+                      {['Unit', 'Panjang', 'Orang', 'Bulan', 'Tahun', 'Paket'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tanggalRealisasi">Tanggal Realisasi (Opsional)</Label>
+                <Input id="tanggalRealisasi" type="date" value={tanggalRealisasi} onChange={(e) => setTanggalRealisasi(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="foto">Foto Kegiatan (Opsional)</Label>
+                {(fotoPreview || currentMonev?.fotoUrl) && (
+                  <div className="relative w-full h-40 bg-muted rounded-md mt-2">
+                    <Image src={fotoPreview || currentMonev!.fotoUrl!} alt="Preview Foto" layout="fill" className="rounded-md object-contain" />
+                  </div>
+                )}
+                <Input id="foto" type="file" className="cursor-pointer" accept="image/*" onChange={handleFotoFileChange} />
+              </div>
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="notes">Catatan (Opsional)</Label>
+                <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Tambahkan catatan monev di sini..." />
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>Batal</Button>
+            <Button onClick={handleFormSubmit} disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Simpan Hasil Monev
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -1007,7 +1047,7 @@ export default function MonevClientPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteMonev} disabled={isSubmitting} className={cn(buttonVariants({ variant: "destructive" }))}>
-             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Hapus
             </AlertDialogAction>
           </AlertDialogFooter>
