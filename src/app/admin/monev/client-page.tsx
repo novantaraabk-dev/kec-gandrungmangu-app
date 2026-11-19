@@ -427,6 +427,7 @@ export default function MonevClientPage() {
             <td class="nowrap">${activity.activityCode || '-'}</td>
             <td>${activity.description}</td>
             <td class="text-right">${formatCurrency(activity.amount)}</td>
+            <td>${activity.fundingSource || '-'}</td>
             <td class="text-right">-</td>
             <td class="text-right">${formatCurrency(activity.amount)}</td>
             <td class="nowrap">-</td>
@@ -443,6 +444,7 @@ export default function MonevClientPage() {
           <td class="nowrap">${monevItem.apbdesCode || activity.activityCode || '-'}</td>
           <td>${monevItem.activity || activity.description}</td>
           <td class="text-right">${formatCurrency(monevItem.budget)}</td>
+          <td>${monevItem.fundingSource || activity.fundingSource || '-'}</td>
           <td class="text-right">${formatCurrency(monevItem.realization)}</td>
           <td class="text-right">${formatCurrency(sisaAnggaran)}</td>
           <td class="nowrap">${monevItem.volume ? `${monevItem.volume.value} ${monevItem.volume.unit}` : "-"}</td>
@@ -510,6 +512,7 @@ export default function MonevClientPage() {
                   <th>Kode Rekening</th>
                   <th>Kegiatan</th>
                   <th class="text-right">Anggaran</th>
+                  <th>Sumber Anggaran</th>
                   <th class="text-right">Realisasi</th>
                   <th class="text-right">Sisa Anggaran</th>
                   <th class="nowrap">Volume</th>
